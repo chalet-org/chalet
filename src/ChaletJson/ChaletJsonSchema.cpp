@@ -774,6 +774,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson);
 
+	defs[Defs::TargetSourceDependsOn] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Any miscellaneous file(s) this source target depends on in order to run. If any of these change, this target will re-link.",
+		"minLength": 1
+	})json"_ojson);
+
 	defs[Defs::TargetDefaultRunArguments] = makeArrayOrString(R"json({
 		"type": "string",
 		"description": "If this is the run target, a string of arguments to pass to the run command.",
@@ -2022,6 +2028,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(targetSource, "language", Defs::TargetSourceLanguage, kPatternConditions);
 		addProperty(targetSource, "metadata", Defs::TargetSourceMetadata);
 		addPropertyAndPattern(targetSource, "outputDescription", Defs::TargetOutputDescription, kPatternConditions);
+		addPropertyAndPattern(targetSource, "dependsOn", Defs::TargetSourceDependsOn, kPatternConditions);
 
 		const auto& abstractProperties = defs[Defs::TargetAbstract][SKeys::Properties];
 		targetSource[SKeys::Properties]["settings"] = abstractProperties["settings"];
@@ -2329,6 +2336,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceImportPackages: return "target-source-importPackages";
 		case Defs::TargetSourceLanguage: return "target-source-language";
 		case Defs::TargetSourceConfigureFiles: return "target-source-configureFiles";
+		case Defs::TargetSourceDependsOn: return "target-source-dependsOn";
 		//
 		case Defs::TargetAbstract: return "target-abstract";
 		case Defs::TargetSourceExecutable: return "target-source-executable";

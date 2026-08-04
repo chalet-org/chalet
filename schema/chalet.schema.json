@@ -1140,6 +1140,9 @@
 				"outputDescription": {
 					"$ref": "#/definitions/target-outputDescription"
 				},
+				"dependsOn": {
+					"$ref": "#/definitions/target-source-dependsOn"
+				},
 				"settings": {
 					"type": "object",
 					"description": "Settings for each language",
@@ -1178,6 +1181,9 @@
 				},
 				"^outputDescription\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-outputDescription"
+				},
+				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-dependsOn"
 				},
 				"^defaultRunArguments\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-defaultRunArguments"
@@ -1231,6 +1237,9 @@
 				"outputDescription": {
 					"$ref": "#/definitions/target-outputDescription"
 				},
+				"dependsOn": {
+					"$ref": "#/definitions/target-source-dependsOn"
+				},
 				"settings": {
 					"type": "object",
 					"description": "Settings for each language",
@@ -1260,6 +1269,9 @@
 				},
 				"^outputDescription\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-outputDescription"
+				},
+				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-dependsOn"
 				}
 			}
 		},
@@ -1430,6 +1442,24 @@
 					"items": {
 						"type": "string",
 						"pattern": "^[\\w\\-+]{3,}(\\.[\\w\\-+]{2,})?$",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"target-source-dependsOn": {
+			"description": "Any miscellaneous file(s) this source target depends on in order to run. If any of these change, this target will re-link.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
 						"minLength": 1
 					}
 				}

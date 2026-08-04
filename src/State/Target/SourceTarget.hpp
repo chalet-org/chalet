@@ -127,6 +127,10 @@ struct SourceTarget final : public IBuildTarget
 	void addConfigureFiles(StringList&& inList);
 	void addConfigureFile(std::string&& inValue);
 
+	const StringList& dependsOn() const noexcept;
+	void addDependsOn(StringList&& inList);
+	void addDependsOn(std::string&& inValue);
+
 	const std::string& precompiledHeader() const noexcept;
 	void setPrecompiledHeader(std::string&& inValue) noexcept;
 	bool usesPrecompiledHeader() const noexcept;
@@ -253,6 +257,7 @@ private:
 	StringList m_appleFrameworkPaths;
 	StringList m_appleFrameworks;
 	StringList m_copyFilesOnRun;
+	StringList m_dependsOn;
 	StringList m_files;
 	StringList m_headers;
 	StringList m_fileExcludes;

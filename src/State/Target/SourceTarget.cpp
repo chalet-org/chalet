@@ -93,16 +93,24 @@ bool SourceTarget::initialize()
 		Diagnostic::error("There was a problem resolving the files to copy on run for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
-
-	if (!expandGlobPatternsInList(m_emscriptenEmbedFiles, GlobMatch::FilesAndFolders))
-	{
-		Diagnostic::error("There was a problem resolving emscripten embed files for the '{}' target. {}.", this->name(), globMessage);
-		return false;
-	}
-	if (!expandGlobPatternsInList(m_emscriptenPreloadFiles, GlobMatch::FilesAndFolders))
+	if (!expandGlobPatternsInList(m_dependsOn, GlobMatch::FilesAndFolders))
 	{
 		Diagnostic::error("There was a problem resolving emscripten preload files for the '{}' target. {}.", this->name(), globMessage);
 		return false;
+	}
+
+	if (m_state.environment->isEmscripten())
+	{
+		if (!expandGlobPatternsInList(m_emscriptenEmbedFiles, GlobMatch::FilesAndFolders))
+		{
+			Diagnostic::error("There was a problem resolving emscripten embed files for the '{}' target. {}.", this->name(), globMessage);
+			return false;
+		}
+		if (!expandGlobPatternsInList(m_emscriptenPreloadFiles, GlobMatch::FilesAndFolders))
+		{
+			Diagnostic::error("There was a problem resolving emscripten preload files for the '{}' target. {}.", this->name(), globMessage);
+			return false;
+		}
 	}
 
 	if (!replaceVariablesInPathList(m_defines))
@@ -960,6 +968,22 @@ void SourceTarget::addConfigureFile(std::string&& inValue)
 }
 
 /*****************************************************************************/
+const StringList& SourceTarget::dependsOn() const noexcept
+{
+	return m_dependsOn;
+}
+
+void SourceTarget::addDependsOn(StringList&& inList)
+{
+	List::forEach(inList, this, &SourceTarget::addDependsOn);
+}
+
+void SourceTarget::addDependsOn(std::string&& inValue)
+{
+	m_dependsOn.emplace_back(std::move(inValue));
+}
+
+/*****************************************************************************/
 const std::string& SourceTarget::precompiledHeader() const noexcept
 {
 	return m_precompiledHeader;
@@ -1483,6 +1507,8 @@ StringList SourceTarget::getLinkerDependentFiles() const
 			}
 		}
 	};
+
+	resolveDirectoriesInList(m_dependsOn);
 
 	if (m_state.environment->isEmscripten())
 	{

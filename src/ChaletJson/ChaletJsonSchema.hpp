@@ -109,6 +109,7 @@ class ChaletJsonSchema
 		TargetSourceConfigureFiles,
 		TargetSourceCopyFilesOnRun,
 		TargetSourceImportPackages,
+		TargetSourceDependsOn,
 		//
 		TargetSourceMetadata,
 		TargetSourceMetadataName,

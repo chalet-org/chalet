@@ -816,6 +816,8 @@ bool ChaletJsonFile::readFromSourceTarget(SourceTarget& outTarget, const Json& i
 				outTarget.setLanguage(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runWorkingDirectory", status))
 				outTarget.setRunWorkingDirectory(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
+				outTarget.addDependsOn(std::move(val));
 			else if (isUnread(status) && String::equals("kind", key))
 				outTarget.setKind(value.get<std::string>());
 			else if (isInvalid(status))
@@ -830,6 +832,8 @@ bool ChaletJsonFile::readFromSourceTarget(SourceTarget& outTarget, const Json& i
 				outTarget.addConfigureFiles(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "importPackages", status))
 				outTarget.addImportPackages(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
+				outTarget.addDependsOn(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
