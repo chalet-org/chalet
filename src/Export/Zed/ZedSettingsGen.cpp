@@ -42,8 +42,14 @@ bool ZedSettingsGen::saveToFile(const std::string& inFilename) const
 
 	// CHALET_VERSION
 	{
+#if defined(CHALET_WIN32)
 		auto chaletJsonSchema = getRemoteSchemaPath("chalet.schema.json");
 		auto chaletSettingsJsonSchema = getRemoteSchemaPath("chalet-settings.schema.json");
+#else
+		const char* schemaPath = "./.zed/schema";
+		auto chaletJsonSchema = fmt::format("{}/chalet.schema.json", schemaPath);
+		auto chaletSettingsJsonSchema = fmt::format("{}/chalet-settings.schema.json", schemaPath);
+#endif
 
 		auto& jLsp = jRoot["lsp"] = Json::object();
 

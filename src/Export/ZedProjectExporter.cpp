@@ -59,8 +59,10 @@ bool ZedProjectExporter::generateProjectFiles()
 	if (output.empty())
 		return false;
 
-	// if (!saveSchemasToDirectory(fmt::format("{}/schema", m_directory)))
-	// 	return false;
+#if !defined(CHALET_WIN32)
+	if (!saveSchemasToDirectory(fmt::format("{}/schema", m_directory)))
+		return false;
+#endif
 
 	auto& debugState = m_exportAdapter->getDebugState();
 
