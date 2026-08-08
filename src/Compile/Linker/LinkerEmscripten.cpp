@@ -118,8 +118,8 @@ void LinkerEmscripten::addLinkerOptions(StringList& outArgList) const
 	if (m_state.configuration.debugSymbols())
 	{
 		List::addIfDoesNotExist(outArgList, "-gsource-map");
-		// List::addIfDoesNotExist(outArgList, "-gseparate-dwarf");
-		// List::addIfDoesNotExist(outArgList, "-gsplit-dwarf");
+		List::addIfDoesNotExist(outArgList, "-gseparate-dwarf");
+		List::addIfDoesNotExist(outArgList, "-gsplit-dwarf");
 
 		// std::string sourceMapBase("--source-map-base");
 		// if (!List::contains(outArgList, sourceMapBase))
