@@ -72,6 +72,11 @@ void LinkerEmscripten::addLinkerOptions(StringList& outArgList) const
 {
 	LinkerLLVMClang::addLinkerOptions(outArgList);
 
+	if (m_project.language() == CodeLanguage::CPlusPlus)
+	{
+		List::addIfDoesNotExist(outArgList, "-sDEFAULT_TO_CXX=1");
+	}
+
 	auto& embedFiles = m_project.emscriptenEmbedFiles();
 	auto& preloadFiles = m_project.emscriptenPreloadFiles();
 	auto& shellFile = m_project.emscriptenShellFile();
