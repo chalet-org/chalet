@@ -305,7 +305,7 @@ std::string BuildEnvironmentEmscripten::getAssemblyFile(const std::string& inSou
 // To workaround this, we'll save our own arguments file that can be read in by the user
 //   and passed to Module["arguments"] in the shell html via something like:
 //
-// <script type="text/javascript" src="runargs.mjs"></script>
+// <script type="text/javascript" src="runargs.js"></script>
 // <script type="text/javascript">
 //   ...
 //   var Module = {
@@ -334,7 +334,7 @@ void BuildEnvironmentEmscripten::generateAppArgumentsWorkaround(const StringList
 	}
 	contents += "];})();";
 
-	auto outputFile = fmt::format("{}/runargs.mjs", buildDir);
+	auto outputFile = fmt::format("{}/runargs.js", buildDir);
 	Files::createFileWithContents(outputFile, contents);
 }
 }
