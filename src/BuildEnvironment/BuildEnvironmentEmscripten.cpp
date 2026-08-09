@@ -297,4 +297,44 @@ std::string BuildEnvironmentEmscripten::getAssemblyFile(const std::string& inSou
 {
 	return fmt::format("{}/{}.o.wat", m_state.paths.asmDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
+
+/*****************************************************************************/
+// 2026-08-08: Run arguments after '--' are still documented in emrun, but passing them
+//   this way no longers works. In emrun.py, everything after "--" simply gets skipped
+//
+// To workaround this, we'll save our own arguments file that can be read in by the user
+//   and passed to Module["arguments"] in the shell html via something like:
+//
+// <script type="text/javascript" src="runargs.mjs"></script>
+// <script type="text/javascript">
+//   ...
+//   var Module = {
+//  	...
+// 	    arguments: window.AppRunArguments || []
+//   }
+//   ...
+// </script>
+//
+// This may not work in every scenario cleanly at the moment, so if you want to avoid it,
+//   use hard-coded arguments in Module["arguments"] or none at all
+//
+void BuildEnvironmentEmscripten::generateAppArgumentsWorkaround(const StringList& inArgs) const
+{
+	auto& buildDir = m_state.paths.buildOutputDir();
+
+	std::string contents;
+	contents += "(function () {window.AppRunArguments = [";
+	i32 i = 0;
+	for (auto& arg : inArgs)
+	{
+		if (i > 0)
+			contents += ",";
+		contents += fmt::format("\"{}\"", arg);
+		i++;
+	}
+	contents += "];})();";
+
+	auto outputFile = fmt::format("{}/runargs.mjs", buildDir);
+	Files::createFileWithContents(outputFile, contents);
+}
 }
