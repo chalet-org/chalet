@@ -1135,6 +1135,12 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 
 		if (!runArguments.empty())
 			cmd.emplace_back("--");
+
+		if (!runArguments.empty())
+		{
+			auto* emscripten = static_cast<BuildEnvironmentEmscripten*>(m_state.environment);
+			emscripten->generateAppArgumentsWorkaround(runArguments);
+		}
 	}
 	else
 	{
@@ -1143,10 +1149,6 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 
 	if (!runArguments.empty())
 	{
-		auto* emscripten = static_cast<BuildEnvironmentEmscripten*>(m_state.environment);
-		emscripten->generateAppArgumentsWorkaround(runArguments);
-
-		// In case this functionality comes back
 		for (auto& arg : runArguments)
 			cmd.emplace_back(std::move(arg));
 	}
