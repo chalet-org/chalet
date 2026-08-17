@@ -325,6 +325,19 @@ bool BuildEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompiler
 }
 
 /*****************************************************************************/
+void BuildEnvironmentGNU::parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const
+{
+	auto start = inLine.find("version");
+	if (start == std::string::npos)
+		return;
+
+	outVersion = inLine.substr(start + 8);
+
+	while (outVersion.back() == ' ')
+		outVersion.pop_back();
+}
+
+/*****************************************************************************/
 void BuildEnvironmentGNU::parseArchFromVersionOutput(const std::string& inLine, std::string& outArch) const
 {
 	if (!String::startsWith("Target:", inLine))
