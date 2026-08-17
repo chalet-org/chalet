@@ -173,6 +173,37 @@ bool BuildEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outInfo
 		// remvoe any suffix
 		version = version.substr(0, version.find_first_not_of("0123456789."));
 
+		// Seen in WSL - ie. "11" instead of "11.4.0"
+		if (version.find(".") == std::string::npos)
+		{
+			// Backup method
+			auto rawOutput = Process::runOutput(StringList{ outInfo.path, "-v" });
+			auto splitOutput = String::split(rawOutput, '\n');
+
+			if (splitOutput.size() >= 2)
+			{
+				version.clear();
+				for (auto& line : splitOutput)
+				{
+					parseVersionFromVersionOutput(line, version);
+				}
+
+#if defined(CHALET_LINUX)
+				if (Shell::isWindowsSubsystemForLinux())
+				{
+					if (String::contains({ "(GCC)", "-win32 " }, version))
+						version = version.substr(0, version.find(" ("));
+					else
+						version = version.substr(0, version.find_first_not_of("0123456789."));
+				}
+				else
+#endif
+				{
+					version = version.substr(0, version.find_first_not_of("0123456789."));
+				}
+			}
+		}
+
 		return version;
 	});
 
@@ -291,6 +322,19 @@ bool BuildEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompiler
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+void BuildEnvironmentGNU::parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const
+{
+	auto start = inLine.find("version");
+	if (start == std::string::npos)
+		return;
+
+	outVersion = inLine.substr(start + 8);
+
+	while (outVersion.back() == ' ')
+		outVersion.pop_back();
 }
 
 /*****************************************************************************/
