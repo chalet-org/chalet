@@ -172,6 +172,11 @@ void CompileCommandsGenerator::addCompileCommand(const std::string& inFile, Stri
 	if (inCommand.empty())
 		return;
 
+	for (auto& part : inCommand)
+	{
+		String::replaceAll(part, "\"", "");
+	}
+
 	auto compileCommand = std::make_unique<CompileCommand>();
 	compileCommand->file = inFile;
 	compileCommand->arguments = std::move(inCommand);
