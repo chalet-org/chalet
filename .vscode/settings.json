@@ -5,6 +5,8 @@
 		"${workspaceFolder}/external/**/*": true,
 		"${workspaceFolder}/tests/**/*": true
 	},
+	"C_Cpp.intelliSenseEngine": "default",
+	"clangd.enable": false,
 	"debug.toolBarLocation": "docked",
 	"editor.formatOnSave": true,
 	"editor.insertSpaces": false,
