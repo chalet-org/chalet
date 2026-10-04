@@ -88,11 +88,11 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 {
 	if (!m_nativeGenerator.buildProject(inProject))
 	{
-		m_filesUpdated = true;
+		m_anyFilesUpdated = true;
 		return false;
 	}
 
-	m_filesUpdated |= m_nativeGenerator.targetCompiled();
+	m_anyFilesUpdated |= m_nativeGenerator.anyFilesUpdated();
 
 	return ICompileStrategy::buildProject(inProject);
 }

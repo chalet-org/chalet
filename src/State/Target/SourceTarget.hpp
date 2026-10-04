@@ -90,6 +90,14 @@ struct SourceTarget final : public IBuildTarget
 	void addCcacheOptions(StringList&& inList);
 	void addCcacheOption(std::string&& inValue);
 
+	const StringList& emscriptenPreloadFiles() const noexcept;
+	void addEmscriptenPreloadFiles(StringList&& inList);
+	void addEmscriptenPreloadFile(std::string&& inValue);
+
+	const StringList& emscriptenEmbedFiles() const noexcept;
+	void addEmscriptenEmbedFiles(StringList&& inList);
+	void addEmscriptenEmbedFile(std::string&& inValue);
+
 	//
 	void parseOutputFilename() noexcept;
 
@@ -119,6 +127,10 @@ struct SourceTarget final : public IBuildTarget
 	void addConfigureFiles(StringList&& inList);
 	void addConfigureFile(std::string&& inValue);
 
+	const StringList& dependsOn() const noexcept;
+	void addDependsOn(StringList&& inList);
+	void addDependsOn(std::string&& inValue);
+
 	const std::string& precompiledHeader() const noexcept;
 	void setPrecompiledHeader(std::string&& inValue) noexcept;
 	bool usesPrecompiledHeader() const noexcept;
@@ -144,6 +156,9 @@ struct SourceTarget final : public IBuildTarget
 
 	const std::string& runWorkingDirectory() const noexcept;
 	void setRunWorkingDirectory(std::string&& inValue) noexcept;
+
+	const std::string& emscriptenShellFile() const noexcept;
+	void setEmscriptenShellFile(std::string&& inValue) noexcept;
 
 	//
 	SourceKind kind() const noexcept;
@@ -210,6 +225,7 @@ struct SourceTarget final : public IBuildTarget
 	void setJustMyCodeDebugging(const bool inValue) noexcept;
 
 	StringList getResolvedRunDependenciesList() const;
+	StringList getLinkerDependentFiles() const;
 
 	bool generateUnityBuildFile(std::string& outSourceFile) const;
 
@@ -241,12 +257,15 @@ private:
 	StringList m_appleFrameworkPaths;
 	StringList m_appleFrameworks;
 	StringList m_copyFilesOnRun;
+	StringList m_dependsOn;
 	StringList m_files;
 	StringList m_headers;
 	StringList m_fileExcludes;
 	StringList m_configureFiles;
 	StringList m_importPackages;
 	StringList m_ccacheOptions;
+	StringList m_emscriptenPreloadFiles;
+	StringList m_emscriptenEmbedFiles;
 
 	std::string m_warningsPresetString;
 	std::string m_outputFile;
@@ -260,6 +279,7 @@ private:
 	std::string m_buildSuffix;
 	std::string m_unityBuildContents;
 	std::string m_runWorkingDirectory;
+	std::string m_emscriptenShellFile;
 
 	SourceKind m_kind = SourceKind::None;
 	CodeLanguage m_language = CodeLanguage::None;

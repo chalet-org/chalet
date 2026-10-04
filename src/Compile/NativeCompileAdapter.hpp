@@ -22,6 +22,7 @@ struct NativeCompileAdapter
 	void addChangedTarget(const SourceTarget& inProject);
 
 	bool checkDependentTargets(const SourceTarget& inProject) const;
+	bool checkDependentMiscellaneousFiles(const SourceTarget& inProject) const;
 	bool rebuildRequiredFromLinks(const SourceTarget& inProject) const;
 	bool anySubProjectTargetsChanged() const;
 

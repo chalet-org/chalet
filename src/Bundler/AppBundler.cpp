@@ -65,7 +65,7 @@ bool AppBundler::run(IDistTarget& inTarget)
 		else
 		{
 #if defined(CHALET_MACOS)
-			if (bundle.isMacosAppBundle())
+			if (bundle.isMacosAppBundle() && !m_state.environment->isEmscripten())
 			{
 				Output::msgTargetOfType("Bundle", fmt::format("{}.{}", bundle.name(), bundle.macosBundleExtension()), Output::theme().header);
 			}
@@ -129,6 +129,9 @@ bool AppBundler::run(IDistTarget& inTarget)
 		}
 		else if (inTarget.isMacosDiskImage())
 		{
+			if (m_state.environment->isEmscripten())
+				return true;
+
 			if (!runMacosDiskImageTarget(static_cast<const MacosDiskImageTarget&>(inTarget)))
 				return false;
 		}
@@ -486,9 +489,6 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 /*****************************************************************************/
 bool AppBundler::runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget)
 {
-	if (m_state.environment->isEmscripten())
-		return true;
-
 	displayHeader("Disk Image", inTarget);
 
 	MacosDiskImageCreator diskImageCreator(m_state);

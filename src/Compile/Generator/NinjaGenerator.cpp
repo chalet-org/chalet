@@ -68,6 +68,13 @@ void NinjaGenerator::addProjectRecipes(const SourceTarget& inProject, const Sour
 		}
 	}
 
+	auto otherFiles = inProject.getLinkerDependentFiles();
+	for (auto&& otherFile : otherFiles)
+	{
+		objects += getSafeNinjaPath(std::move(otherFile));
+		objects += ' ';
+	}
+
 	if (objects.back() == ' ')
 		objects.pop_back();
 

@@ -61,8 +61,24 @@ ThreadPool::~ThreadPool()
 	stop();
 
 	m_condition.notify_all();
+
+	bool waitForThreads = false;
 	for (auto& worker : m_workers)
-		worker.join();
+	{
+		CHALET_TRY
+		{
+			worker.join();
+		}
+		CHALET_CATCH(...)
+		{
+			waitForThreads = true;
+		}
+	}
+
+	if (waitForThreads)
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	}
 }
 
 /*****************************************************************************/

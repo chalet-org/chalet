@@ -816,6 +816,8 @@ bool ChaletJsonFile::readFromSourceTarget(SourceTarget& outTarget, const Json& i
 				outTarget.setLanguage(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runWorkingDirectory", status))
 				outTarget.setRunWorkingDirectory(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
+				outTarget.addDependsOn(std::move(val));
 			else if (isUnread(status) && String::equals("kind", key))
 				outTarget.setKind(value.get<std::string>());
 			else if (isInvalid(status))
@@ -830,6 +832,8 @@ bool ChaletJsonFile::readFromSourceTarget(SourceTarget& outTarget, const Json& i
 				outTarget.addConfigureFiles(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "importPackages", status))
 				outTarget.addImportPackages(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
+				outTarget.addDependsOn(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -1297,6 +1301,12 @@ bool ChaletJsonFile::readFromCompilerSettingsCxx(SourceTarget& outTarget, const 
 				outTarget.addLibDir(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "includeDirs", status))
 				outTarget.addIncludeDir(std::move(val));
+			else if (m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "emscriptenPreloadFiles", status))
+				outTarget.addEmscriptenPreloadFile(std::move(val));
+			else if (m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "emscriptenEmbedFiles", status))
+				outTarget.addEmscriptenEmbedFile(std::move(val));
+			else if (m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "emscriptenShellFile", status))
+				outTarget.setEmscriptenShellFile(std::move(val));
 #if defined(CHALET_MACOS)
 			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
 				outTarget.addAppleFrameworkPath(std::move(val));
@@ -1367,6 +1377,10 @@ bool ChaletJsonFile::readFromCompilerSettingsCxx(SourceTarget& outTarget, const 
 				outTarget.addLinkerOptions(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "ccacheOptions", status))
 				outTarget.addCcacheOptions(std::move(val));
+			else if (m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "emscriptenPreloadFiles", status))
+				outTarget.addEmscriptenPreloadFiles(std::move(val));
+			else if (m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "emscriptenEmbedFiles", status))
+				outTarget.addEmscriptenEmbedFiles(std::move(val));
 #if defined(CHALET_MACOS)
 			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
 				outTarget.addAppleFrameworkPaths(std::move(val));

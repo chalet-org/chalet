@@ -403,6 +403,12 @@ std::string MakefileGeneratorNMake::getLinkerPreReqs(const StringList& objects) 
 		}
 	}
 
+	auto otherFiles = m_project->getLinkerDependentFiles();
+	for (auto&& otherFile : otherFiles)
+	{
+		ret += " " + std::move(otherFile);
+	}
+
 	return ret;
 }
 

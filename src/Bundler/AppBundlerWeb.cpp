@@ -5,11 +5,13 @@
 
 #include "Bundler/AppBundlerWeb.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -34,6 +36,7 @@ bool AppBundlerWeb::bundleForPlatform()
 
 	StringList wasmFiles;
 	StringList jsFiles;
+	StringList dataFiles;
 	for (auto& project : buildTargets)
 	{
 		auto outputFilePath = m_state.paths.getTargetFilename(*project);
@@ -42,6 +45,7 @@ bool AppBundlerWeb::bundleForPlatform()
 			auto noExtension = String::getPathFolderBaseName(outputFilePath);
 			wasmFiles.emplace_back(fmt::format("{}.wasm", noExtension));
 			jsFiles.emplace_back(fmt::format("{}.js", noExtension));
+			dataFiles.emplace_back(fmt::format("{}.data", noExtension));
 		}
 	}
 
@@ -55,6 +59,19 @@ bool AppBundlerWeb::bundleForPlatform()
 	{
 		if (!copyIncludedPath(file, executablePath))
 			continue;
+	}
+	for (auto& file : dataFiles)
+	{
+		if (!copyIncludedPath(file, executablePath))
+			continue;
+	}
+
+	auto mainExecutable = m_bundle.getMainExecutable();
+	if (!mainExecutable.empty() && String::endsWith(".html", mainExecutable))
+	{
+		auto outputExec = fmt::format("{}/{}", executablePath, mainExecutable);
+		auto renamedExec = fmt::format("{}/index.html", executablePath);
+		Files::rename(outputExec, renamedExec);
 	}
 
 	return true;

@@ -242,10 +242,27 @@ bool PackageManager::initializePackages()
 		return false;
 	};
 
+	StringList requiredPackages;
+	for (auto& target : m_state.targets)
+	{
+		if (target->isSources())
+		{
+			auto& project = static_cast<SourceTarget&>(*target);
+			auto& importedPackages = project.importPackages();
+			if (importedPackages.empty())
+				continue;
+
+			for (auto& package : importedPackages)
+			{
+				resolveDependencies(package, requiredPackages);
+			}
+		}
+	}
+
 	for (auto& [name, pkg] : m_impl->packages)
 	{
 		// We only want to initialize the required packages
-		if (m_impl->packageDeps.find(name) == m_impl->packageDeps.end())
+		if (!List::contains(requiredPackages, name))
 			continue;
 
 		bool rootChanged = false;

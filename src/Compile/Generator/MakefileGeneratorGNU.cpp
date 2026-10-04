@@ -430,6 +430,14 @@ std::string MakefileGeneratorGNU::getLinkerPreReqs(const StringList& objects) co
 	std::string ret = String::join(objects);
 
 	u32 count = 0;
+
+	auto addLinkerPreReq = [&ret, &count](std::string&& inValue) {
+		if (count == 0)
+			ret += " |";
+		ret += " " + std::move(inValue);
+		++count;
+	};
+
 	for (auto& target : m_state.targets)
 	{
 		if (target->isSources())
@@ -449,12 +457,15 @@ std::string MakefileGeneratorGNU::getLinkerPreReqs(const StringList& objects) co
 			*/
 			if (List::contains(m_project->projectStaticLinks(), project.name()))
 			{
-				if (count == 0)
-					ret += " |";
-				ret += " " + m_state.paths.getTargetFilename(project);
-				++count;
+				addLinkerPreReq(m_state.paths.getTargetFilename(project));
 			}
 		}
+	}
+
+	auto otherFiles = m_project->getLinkerDependentFiles();
+	for (auto&& otherFile : otherFiles)
+	{
+		addLinkerPreReq(std::move(otherFile));
 	}
 
 	return ret;

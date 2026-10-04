@@ -276,7 +276,6 @@ bool GitDependencyBuilder::updateDependencyCache()
 			 ".gitignore",
 			 ".gitattributes",
 			 ".gitmodules",
-			 ".github",
 		 })
 	{
 		auto outPath = fmt::format("{}/{}", destination, path);

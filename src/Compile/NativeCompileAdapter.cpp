@@ -55,6 +55,23 @@ bool NativeCompileAdapter::checkDependentTargets(const SourceTarget& inProject) 
 }
 
 /*****************************************************************************/
+bool NativeCompileAdapter::checkDependentMiscellaneousFiles(const SourceTarget& inProject) const
+{
+	StringList linkerFiles = inProject.getLinkerDependentFiles();
+	if (!linkerFiles.empty())
+	{
+		auto& sources = m_state.cache.file().sources();
+		for (auto& miscFile : linkerFiles)
+		{
+			if (sources.fileChangedOrDoesNotExist(miscFile))
+				return true;
+		}
+	}
+
+	return false;
+}
+
+/*****************************************************************************/
 bool NativeCompileAdapter::rebuildRequiredFromLinks(const SourceTarget& inProject) const
 {
 	bool result = false;

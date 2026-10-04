@@ -308,6 +308,9 @@
 				}
 			},
 			"patternProperties": {
+				"^buildTargets\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/dist-bundle-buildTargets"
+				},
 				"^exclude\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/dist-bundle-exclude"
 				},
@@ -1137,6 +1140,9 @@
 				"outputDescription": {
 					"$ref": "#/definitions/target-outputDescription"
 				},
+				"dependsOn": {
+					"$ref": "#/definitions/target-source-dependsOn"
+				},
 				"settings": {
 					"type": "object",
 					"description": "Settings for each language",
@@ -1175,6 +1181,9 @@
 				},
 				"^outputDescription\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-outputDescription"
+				},
+				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-dependsOn"
 				},
 				"^defaultRunArguments\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-defaultRunArguments"
@@ -1228,6 +1237,9 @@
 				"outputDescription": {
 					"$ref": "#/definitions/target-outputDescription"
 				},
+				"dependsOn": {
+					"$ref": "#/definitions/target-source-dependsOn"
+				},
 				"settings": {
 					"type": "object",
 					"description": "Settings for each language",
@@ -1257,6 +1269,9 @@
 				},
 				"^outputDescription\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-outputDescription"
+				},
+				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-dependsOn"
 				}
 			}
 		},
@@ -1432,6 +1447,24 @@
 				}
 			]
 		},
+		"target-source-dependsOn": {
+			"description": "Any miscellaneous file(s) this source target depends on in order to run. If any of these change, this target will re-link.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
 		"target-source-metadata": {
 			"description": "Metadata to assign to source targets that can be retrieved with the `PROJECT_` prefix within configure files.\n(See: `configureFiles`)",
 			"oneOf": [
@@ -1546,6 +1579,15 @@
 				"defines": {
 					"$ref": "#/definitions/target-source-cxx-defines"
 				},
+				"emscriptenPreloadFiles": {
+					"$ref": "#/definitions/target-source-cxx-emscriptenPreloadFiles"
+				},
+				"emscriptenEmbedFiles": {
+					"$ref": "#/definitions/target-source-cxx-emscriptenEmbedFiles"
+				},
+				"emscriptenShellFile": {
+					"$ref": "#/definitions/target-source-cxx-emscriptenShellFile"
+				},
 				"exceptions": {
 					"$ref": "#/definitions/target-source-cxx-exceptions"
 				},
@@ -1652,6 +1694,15 @@
 				},
 				"^defines\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-defines"
+				},
+				"^emscriptenPreloadFiles\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-emscriptenPreloadFiles"
+				},
+				"^emscriptenEmbedFiles\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-emscriptenEmbedFiles"
+				},
+				"^emscriptenShellFile\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-emscriptenShellFile"
 				},
 				"^exceptions\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-exceptions"
@@ -2399,6 +2450,47 @@
 			],
 			"default": "main"
 		},
+		"target-source-cxx-emscriptenPreloadFiles": {
+			"description": "A list of files to pass to assign '--preload-file=(path)' arguments to during emscripten builds. If any of these files change, the program will be relinked. Example: Directories will be assigned the flag '--preload-file=(mydir)/', while files will be assigned the flag '--preload-file=(path)@(filename_no_directory)'",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"target-source-cxx-emscriptenEmbedFiles": {
+			"description": "A list of files to pass to assign '--embed-file=(path)' arguments to during emscripten builds. If any of these files change, the program will be relinked. Example: Directories will be assigned the flag '--embed-file=(mydir)/', while files will be assigned the flag '--embed-file=(path)@(filename_no_directory)'",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"target-source-cxx-emscriptenShellFile": {
+			"type": "string",
+			"description": "The name of a shell html file to pass to the '--shell-file=(path)' argument during emscripten builds. If the shell file changes, the program will be relinked.",
+			"minLength": 1
+		},
 		"target-script": {
 			"type": "object",
 			"description": "Run a single script.",
@@ -2840,7 +2932,7 @@
 		},
 		"target-cmake-runExecutable": {
 			"type": "string",
-			"description": "The path to an executable to run, relative to the build directory.",
+			"description": "The path to an executable to run, relative to the CMake target's build directory.",
 			"minLength": 1
 		},
 		"target-meson": {
@@ -3005,7 +3097,7 @@
 		},
 		"target-meson-runExecutable": {
 			"type": "string",
-			"description": "The path to an executable to run, relative to the build directory.",
+			"description": "The path to an executable to run, relative to the Meson target's build directory.",
 			"minLength": 1
 		},
 		"target-chalet": {

@@ -33,6 +33,7 @@
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/MesonTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
+#include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -237,6 +238,18 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 		if (target->isProcess())
 		{
 			auto& process = static_cast<const ProcessBuildTarget&>(*target);
+			auto& depends = process.dependsOn();
+			for (auto& dep : depends)
+			{
+				if (String::startsWith(buildDir, dep))
+				{
+					List::addIfDoesNotExist(dependsOn, dep.substr(buildDir.size() + 1));
+				}
+			}
+		}
+		else if (target->isScript())
+		{
+			auto& process = static_cast<const ScriptBuildTarget&>(*target);
 			auto& depends = process.dependsOn();
 			for (auto& dep : depends)
 			{

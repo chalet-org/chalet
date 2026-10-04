@@ -140,7 +140,7 @@ bool CompileStrategyMakefile::buildProject(const SourceTarget& inProject)
 	}
 	else
 	{
-		m_filesUpdated = true;
+		m_anyFilesUpdated = true;
 		return false;
 	}
 }

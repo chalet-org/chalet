@@ -28,7 +28,7 @@ public:
 	void initialize();
 	void dispose() const;
 
-	bool targetCompiled() const noexcept;
+	bool anyFilesUpdated() const noexcept;
 
 private:
 	CommandPool::CmdList getPchCommands(const std::string& pchTarget);
@@ -46,6 +46,7 @@ private:
 	mutable Unique<CommandPool> m_commandPool;
 
 	Dictionary<CommandPool::JobList> m_targets;
+	Dictionary<Unique<CommandPool::Job>> m_lateLinkCmds;
 
 	const SourceTarget* m_project = nullptr;
 	CompileToolchain* m_toolchain = nullptr;
@@ -57,6 +58,6 @@ private:
 
 	bool m_pchChanged = false;
 	bool m_sourcesChanged = false;
-	bool m_linkTarget = false;
+	bool m_anyFilesUpdated = false;
 };
 }
