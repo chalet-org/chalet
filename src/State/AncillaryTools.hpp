@@ -23,8 +23,8 @@ struct AncillaryTools
 
 	const ScriptAdapter& scriptAdapter() const;
 
-	std::string getApplePlatformSdk(const std::string& inKey) const;
-	void addApplePlatformSdk(const std::string& inKey, std::string&& inValue);
+	std::string getPathToPlatformSDK(const std::string& inKey) const;
+	void addPathToPlatformSDK(const std::string& inKey, std::string&& inValue);
 
 	const std::string& bash() const noexcept;
 	void setBash(std::string&& inValue) noexcept;
@@ -127,7 +127,7 @@ struct AncillaryTools
 private:
 	ScriptAdapter m_scriptAdapter;
 
-	Dictionary<std::string> m_applePlatformSdk;
+	Dictionary<std::string> m_pathToPlatformSDKs;
 
 	std::string m_chalet;
 

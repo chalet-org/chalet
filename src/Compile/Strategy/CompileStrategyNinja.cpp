@@ -80,7 +80,7 @@ bool CompileStrategyNinja::addProject(const SourceTarget& inProject)
 		{
 			auto& hash = m_hashes.at(name);
 			auto& toolchain = m_toolchains.at(name);
-			m_generator->addProjectRecipes(inProject, *outputs, toolchain, hash);
+			m_generator->addProjectRecipes(inProject, *outputs, *toolchain, hash);
 		}
 	}
 
@@ -153,7 +153,7 @@ bool CompileStrategyNinja::buildProject(const SourceTarget& inProject)
 	}
 	else
 	{
-		m_filesUpdated = true;
+		m_anyFilesUpdated = true;
 		return false;
 	}
 }

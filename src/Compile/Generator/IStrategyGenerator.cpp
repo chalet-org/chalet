@@ -20,7 +20,7 @@ IStrategyGenerator::IStrategyGenerator(const BuildState& inState) :
 }
 
 /*****************************************************************************/
-[[nodiscard]] StrategyGenerator IStrategyGenerator::make(const StrategyType inType, BuildState& inState)
+[[nodiscard]] Unique<IStrategyGenerator> IStrategyGenerator::make(const StrategyType inType, BuildState& inState)
 {
 	switch (inType)
 	{
@@ -45,7 +45,7 @@ IStrategyGenerator::IStrategyGenerator(const BuildState& inState) :
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented StrategyGenerator requested: {}", static_cast<i32>(inType));
+	Diagnostic::errorAbort("Unimplemented strategy generator requested: {}", static_cast<i32>(inType));
 	return nullptr;
 }
 

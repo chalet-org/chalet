@@ -13,7 +13,7 @@ namespace chalet
 class BuildState;
 struct IBuildTarget;
 struct SourceTarget;
-struct CompileToolchainController;
+struct CompileToolchain;
 
 struct CodeBlocksCBPGen
 {
@@ -45,9 +45,9 @@ private:
 
 	void addBuildConfigurationForTarget(XmlElement& outNode, const std::string& inName, const std::string& inConfigName) const;
 
-	void addSourceTarget(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const;
-	void addSourceCompilerOptions(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const;
-	void addSourceLinkerOptions(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const;
+	void addSourceTarget(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchain& inToolchain) const;
+	void addSourceCompilerOptions(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchain& inToolchain) const;
+	void addSourceLinkerOptions(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchain& inToolchain) const;
 	void addScriptTarget(XmlElement& outNode, const BuildState& inState, const IBuildTarget& inTarget, const std::string& inName) const;
 	void addAllBuildTarget(XmlElement& outNode, const BuildState& inState) const;
 	std::string getOutputType(const SourceTarget& inTarget) const;

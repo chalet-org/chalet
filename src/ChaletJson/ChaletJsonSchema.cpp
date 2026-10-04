@@ -774,6 +774,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson);
 
+	defs[Defs::TargetSourceDependsOn] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Any miscellaneous file(s) this source target depends on in order to run. If any of these change, this target will re-link.",
+		"minLength": 1
+	})json"_ojson);
+
 	defs[Defs::TargetDefaultRunArguments] = makeArrayOrString(R"json({
 		"type": "string",
 		"description": "If this is the run target, a string of arguments to pass to the run command.",
@@ -1376,6 +1382,24 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": true
 	})json"_ojson;
 
+	defs[Defs::TargetSourceCxxEmscriptenPreloadFiles] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "A list of files to pass to assign '--preload-file=(path)' arguments to during emscripten builds. If any of these files change, the program will be relinked. Example: Directories will be assigned the flag '--preload-file=(mydir)/', while files will be assigned the flag '--preload-file=(path)@(filename_no_directory)'",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::TargetSourceCxxEmscriptenEmbedFiles] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "A list of files to pass to assign '--embed-file=(path)' arguments to during emscripten builds. If any of these files change, the program will be relinked. Example: Directories will be assigned the flag '--embed-file=(mydir)/', while files will be assigned the flag '--embed-file=(path)@(filename_no_directory)'",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::TargetSourceCxxEmscriptenShellFile] = R"json({
+		"type": "string",
+		"description": "The name of a shell html file to pass to the '--shell-file=(path)' argument during emscripten builds. If the shell file changes, the program will be relinked.",
+		"minLength": 1
+	})json"_ojson;
+
 	//
 
 	defs[Defs::TargetScriptFile] = R"json({
@@ -1508,7 +1532,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetCMakeRunExecutable] = R"json({
 		"type": "string",
-		"description": "The path to an executable to run, relative to the build directory.",
+		"description": "The path to an executable to run, relative to the CMake target's build directory.",
 		"minLength": 1
 	})json"_ojson;
 
@@ -1564,7 +1588,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetMesonRunExecutable] = R"json({
 		"type": "string",
-		"description": "The path to an executable to run, relative to the build directory.",
+		"description": "The path to an executable to run, relative to the Meson target's build directory.",
 		"minLength": 1
 	})json"_ojson;
 
@@ -1701,7 +1725,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			]
 		})json"_ojson;
 		distTarget[SKeys::Properties] = Json::object();
-		addProperty(distTarget, "buildTargets", Defs::DistributionBundleBuildTargets);
+		addPropertyAndPattern(distTarget, "buildTargets", Defs::DistributionBundleBuildTargets, kPatternConditions);
 		addProperty(distTarget, "condition", Defs::DistributionCondition);
 		addPropertyAndPattern(distTarget, "exclude", Defs::DistributionBundleExclude, kPatternConditions);
 		addPropertyAndPattern(distTarget, "include", Defs::DistributionBundleInclude, kPatternConditions);
@@ -1902,6 +1926,9 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(sourceTargetCxx, "cppStandard", Defs::TargetSourceCxxCppStandard, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "cStandard", Defs::TargetSourceCxxCStandard, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "defines", Defs::TargetSourceCxxDefines, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "emscriptenPreloadFiles", Defs::TargetSourceCxxEmscriptenPreloadFiles, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "emscriptenEmbedFiles", Defs::TargetSourceCxxEmscriptenEmbedFiles, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "emscriptenShellFile", Defs::TargetSourceCxxEmscriptenShellFile, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "exceptions", Defs::TargetSourceCxxExceptions, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "executionCharset", Defs::TargetSourceCxxExecutionCharSet, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "fastMath", Defs::TargetSourceCxxFastMath, kPatternConditions);
@@ -2001,6 +2028,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(targetSource, "language", Defs::TargetSourceLanguage, kPatternConditions);
 		addProperty(targetSource, "metadata", Defs::TargetSourceMetadata);
 		addPropertyAndPattern(targetSource, "outputDescription", Defs::TargetOutputDescription, kPatternConditions);
+		addPropertyAndPattern(targetSource, "dependsOn", Defs::TargetSourceDependsOn, kPatternConditions);
 
 		const auto& abstractProperties = defs[Defs::TargetAbstract][SKeys::Properties];
 		targetSource[SKeys::Properties]["settings"] = abstractProperties["settings"];
@@ -2308,6 +2336,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceImportPackages: return "target-source-importPackages";
 		case Defs::TargetSourceLanguage: return "target-source-language";
 		case Defs::TargetSourceConfigureFiles: return "target-source-configureFiles";
+		case Defs::TargetSourceDependsOn: return "target-source-dependsOn";
 		//
 		case Defs::TargetAbstract: return "target-abstract";
 		case Defs::TargetSourceExecutable: return "target-source-executable";
@@ -2360,6 +2389,9 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxWindowsSubSystem: return "target-source-cxx-windowsSubSystem";
 		case Defs::TargetSourceCxxWindowsEntryPoint: return "target-source-cxx-windowsEntryPoint";
 		case Defs::TargetSourceCxxJustMyCodeDebugging: return "target-source-cxx-justMyCodeDebugging";
+		case Defs::TargetSourceCxxEmscriptenPreloadFiles: return "target-source-cxx-emscriptenPreloadFiles";
+		case Defs::TargetSourceCxxEmscriptenEmbedFiles: return "target-source-cxx-emscriptenEmbedFiles";
+		case Defs::TargetSourceCxxEmscriptenShellFile: return "target-source-cxx-emscriptenShellFile";
 		//
 		case Defs::TargetScript: return "target-script";
 		case Defs::TargetScriptFile: return "target-script-file";

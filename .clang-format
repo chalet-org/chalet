@@ -1,18 +1,18 @@
-# Clang version 9.0.0
+# clang-format 3.8
 Language: Cpp
 AccessModifierOffset: -4
-AllowShortBlocksOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
 AlwaysBreakTemplateDeclarations: Yes
-AlignConsecutiveAssignments: false
-AlignConsecutiveDeclarations: false
-AlignOperands: false
+AlignConsecutiveAssignments: None
+AlignConsecutiveDeclarations: None
+AlignOperands: DontAlign
 AlignTrailingComments: true
 AlignAfterOpenBracket: DontAlign
 AllowAllConstructorInitializersOnNextLine: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 AllowShortCaseLabelsOnASingleLine: true
-AllowShortIfStatementsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
 BinPackArguments: false
 BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeTernaryOperators: false
@@ -31,15 +31,15 @@ IndentWidth: 4
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None
 PointerAlignment: Left
-ReflowComments: false
+ReflowComments: Never
 SpaceAfterCStyleCast: false
 SpaceAfterTemplateKeyword: true
 SpaceBeforeCpp11BracedList: false
-SpacesInAngles: false
+SpacesInAngles: Never
 SpacesInContainerLiterals: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
-Standard: Cpp11
+Standard: c++20
 TabWidth: 4
 UseTab: Always
 
@@ -47,7 +47,7 @@ BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel: false
   AfterClass: true
-  AfterControlStatement: true
+  AfterControlStatement: Always
   AfterEnum: true
   AfterFunction: true
   AfterNamespace: true

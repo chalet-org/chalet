@@ -172,7 +172,7 @@ StringList BuildEnvironmentLLVM::getSystemIncludeDirectories(const std::string& 
 /*****************************************************************************/
 StringList BuildEnvironmentLLVM::getVersionCommand(const std::string& inExecutable) const
 {
-	return { inExecutable, "-target", m_state.info.targetArchitectureTriple(), "-v" };
+	return { inExecutable, "-target", m_state.info.targetArchitectureTriple(), "-dumpversion" };
 }
 
 /*****************************************************************************/

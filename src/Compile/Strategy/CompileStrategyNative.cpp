@@ -53,7 +53,9 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject)
 	if (inProject.willBuild())
 	{
 		const auto& name = inProject.name();
-		if (!m_nativeGenerator.addProject(inProject, m_outputs.at(name), m_toolchains.at(name)))
+		const auto& outputs = m_outputs.at(name);
+		const auto& toolchainCtrlr = m_toolchains.at(name);
+		if (!m_nativeGenerator.addProject(inProject, *outputs, *toolchainCtrlr))
 			return false;
 	}
 
@@ -86,11 +88,11 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 {
 	if (!m_nativeGenerator.buildProject(inProject))
 	{
-		m_filesUpdated = true;
+		m_anyFilesUpdated = true;
 		return false;
 	}
 
-	m_filesUpdated |= m_nativeGenerator.targetCompiled();
+	m_anyFilesUpdated |= m_nativeGenerator.anyFilesUpdated();
 
 	return ICompileStrategy::buildProject(inProject);
 }

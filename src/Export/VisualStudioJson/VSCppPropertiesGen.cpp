@@ -6,7 +6,7 @@
 #include "Export/VisualStudioJson/VSCppPropertiesGen.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
-#include "Compile/CompileToolchainController.hpp"
+#include "Compile/CompileToolchain.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Platform/Platform.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -128,7 +128,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename)
 		if (signifcantTarget != nullptr)
 		{
 			const auto& sourceTarget = *signifcantTarget;
-			auto toolchain = std::make_unique<CompileToolchainController>(sourceTarget);
+			auto toolchain = std::make_unique<CompileToolchain>(sourceTarget);
 			if (!toolchain->initialize(*state))
 			{
 				Diagnostic::error("Error preparing the toolchain for project: {}", sourceTarget.name());

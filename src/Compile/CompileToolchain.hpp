@@ -15,9 +15,9 @@ namespace chalet
 class BuildState;
 struct SourceTarget;
 
-struct CompileToolchainController
+struct CompileToolchain
 {
-	explicit CompileToolchainController(const SourceTarget& inProject);
+	explicit CompileToolchain(const SourceTarget& inProject);
 
 	bool initialize(const BuildState& inState);
 
@@ -35,6 +35,4 @@ struct CompileToolchainController
 private:
 	const SourceTarget& m_project;
 };
-
-using CompileToolchain = Unique<CompileToolchainController>;
 }

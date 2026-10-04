@@ -60,9 +60,9 @@ std::string BuildEnvironmentIntel::getPrecompiledHeaderExtension() const
 StringList BuildEnvironmentIntel::getVersionCommand(const std::string& inExecutable) const
 {
 	if (m_type == ToolchainType::IntelLLVM)
-		return { inExecutable, "-target", m_state.info.targetArchitectureTriple(), "-v" };
+		return { inExecutable, "-target", m_state.info.targetArchitectureTriple(), "-dumpversion" };
 	else if (m_type == ToolchainType::IntelClassic)
-		return { inExecutable, "-V" };
+		return { inExecutable, "-dumpversion" };
 	else
 		return StringList{};
 }
@@ -269,31 +269,6 @@ bool BuildEnvironmentIntel::readArchitectureTripleFromCompiler()
 #endif
 
 	return true;
-}
-
-/*****************************************************************************/
-void BuildEnvironmentIntel::parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const
-{
-	if (!String::contains("Intel", inLine))
-		return;
-
-	auto start = inLine.find("Version ");
-	if (start != std::string::npos)
-	{
-		start += 8;
-		auto end = inLine.find(' ', start);
-		outVersion = inLine.substr(start, end - start);
-	}
-	else
-	{
-		start = inLine.find("Compiler ");
-		if (start != std::string::npos)
-		{
-			start += 9;
-			auto end = inLine.find(' ', start);
-			outVersion = inLine.substr(start, end - start);
-		}
-	}
 }
 
 /*****************************************************************************/

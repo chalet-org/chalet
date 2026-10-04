@@ -48,15 +48,15 @@ AppBundler::AppBundler(BuildState& inState) :
 AppBundler::~AppBundler() = default;
 
 /*****************************************************************************/
-bool AppBundler::run(const DistTarget& inTarget)
+bool AppBundler::run(IDistTarget& inTarget)
 {
-	const auto& targetName = inTarget->name();
+	const auto& targetName = inTarget.name();
 
 	Timer timer;
 
-	if (inTarget->isDistributionBundle())
+	if (inTarget.isDistributionBundle())
 	{
-		auto& bundle = static_cast<BundleTarget&>(*inTarget);
+		auto& bundle = static_cast<BundleTarget&>(inTarget);
 
 		if (!bundle.outputDescription().empty())
 		{
@@ -65,7 +65,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 		else
 		{
 #if defined(CHALET_MACOS)
-			if (bundle.isMacosAppBundle())
+			if (bundle.isMacosAppBundle() && !m_state.environment->isEmscripten())
 			{
 				Output::msgTargetOfType("Bundle", fmt::format("{}.{}", bundle.name(), bundle.macosBundleExtension()), Output::theme().header);
 			}
@@ -87,13 +87,13 @@ bool AppBundler::run(const DistTarget& inTarget)
 		auto bundler = IAppBundler::make(m_state, bundle, *m_dependencyMap);
 		if (!bundler->initialize())
 		{
-			Diagnostic::error("There was an error initializing the bundler for: {}", inTarget->name());
+			Diagnostic::error("There was an error initializing the bundler for: {}", inTarget.name());
 			return false;
 		}
 
 		if (!removeOldFiles(*bundler))
 		{
-			Diagnostic::error("There was an error removing the previous distribution bundle for: {}", inTarget->name());
+			Diagnostic::error("There was an error removing the previous distribution bundle for: {}", inTarget.name());
 			return false;
 		}
 
@@ -122,29 +122,32 @@ bool AppBundler::run(const DistTarget& inTarget)
 	}
 	else
 	{
-		if (inTarget->isArchive())
+		if (inTarget.isArchive())
 		{
-			if (!runArchiveTarget(static_cast<const BundleArchiveTarget&>(*inTarget)))
+			if (!runArchiveTarget(static_cast<const BundleArchiveTarget&>(inTarget)))
 				return false;
 		}
-		else if (inTarget->isMacosDiskImage())
+		else if (inTarget.isMacosDiskImage())
 		{
-			if (!runMacosDiskImageTarget(static_cast<const MacosDiskImageTarget&>(*inTarget)))
+			if (m_state.environment->isEmscripten())
+				return true;
+
+			if (!runMacosDiskImageTarget(static_cast<const MacosDiskImageTarget&>(inTarget)))
 				return false;
 		}
-		else if (inTarget->isScript())
+		else if (inTarget.isScript())
 		{
-			if (!runScriptTarget(static_cast<const ScriptDistTarget&>(*inTarget)))
+			if (!runScriptTarget(static_cast<const ScriptDistTarget&>(inTarget)))
 				return false;
 		}
-		else if (inTarget->isProcess())
+		else if (inTarget.isProcess())
 		{
-			if (!runProcessTarget(static_cast<const ProcessDistTarget&>(*inTarget)))
+			if (!runProcessTarget(static_cast<const ProcessDistTarget&>(inTarget)))
 				return false;
 		}
-		else if (inTarget->isValidation())
+		else if (inTarget.isValidation())
 		{
-			if (!runValidationTarget(static_cast<const ValidationDistTarget&>(*inTarget)))
+			if (!runValidationTarget(static_cast<const ValidationDistTarget&>(inTarget)))
 				return false;
 		}
 	}
@@ -486,9 +489,6 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 /*****************************************************************************/
 bool AppBundler::runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget)
 {
-	if (m_state.environment->isEmscripten())
-		return true;
-
 	displayHeader("Disk Image", inTarget);
 
 	MacosDiskImageCreator diskImageCreator(m_state);

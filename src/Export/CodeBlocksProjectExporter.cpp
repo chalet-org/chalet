@@ -6,7 +6,7 @@
 #include "Export/CodeBlocksProjectExporter.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
-#include "Compile/CompileToolchainController.hpp"
+#include "Compile/CompileToolchain.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/CodeBlocks/CodeBlocksCBPGen.hpp"
 #include "Export/CodeBlocks/CodeBlocksWorkspaceGen.hpp"

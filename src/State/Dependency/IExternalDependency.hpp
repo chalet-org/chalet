@@ -11,14 +11,13 @@ namespace chalet
 {
 struct IExternalDependency;
 struct CentralState;
-using ExternalDependency = Unique<IExternalDependency>;
 
 struct IExternalDependency
 {
 	explicit IExternalDependency(const CentralState& inCentralState, const ExternalDependencyType inType);
 	virtual ~IExternalDependency() = default;
 
-	[[nodiscard]] static ExternalDependency make(const ExternalDependencyType inType, const CentralState& inCentralState);
+	[[nodiscard]] static Unique<IExternalDependency> make(const ExternalDependencyType inType, const CentralState& inCentralState);
 
 	virtual bool initialize() = 0;
 	virtual bool validate() = 0;
@@ -46,5 +45,5 @@ private:
 	ExternalDependencyType m_type;
 };
 
-using ExternalDependencyList = std::vector<ExternalDependency>;
+using ExternalDependencyList = std::vector<Unique<IExternalDependency>>;
 }

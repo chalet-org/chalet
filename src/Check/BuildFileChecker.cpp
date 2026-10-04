@@ -13,6 +13,7 @@
 #include "State/Target/IBuildTarget.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
+#include "Utility/Path.hpp"
 #include "Yaml/YamlFile.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -21,6 +22,13 @@ namespace chalet
 namespace
 {
 constexpr const char kCondition[] = "condition";
+}
+
+/*****************************************************************************/
+bool BuildFileChecker::run(BuildState& inState)
+{
+	BuildFileChecker buildFileChecker(inState);
+	return buildFileChecker.run();
 }
 
 /*****************************************************************************/
@@ -36,10 +44,11 @@ bool BuildFileChecker::run()
 	// auto& inputs = m_centralState.inputs();
 	auto& theme = Output::theme();
 
+	Output::lineBreak();
 	Output::printSeparator();
 
 	{
-		auto& buildFile = m_state.getCentralState().chaletJson();
+		auto& buildFile = m_state.getCentralState().buildFile();
 		Json checked = getExpandedBuildFile();
 
 		Output::printInfo(buildFile.filename());
@@ -143,16 +152,26 @@ bool BuildFileChecker::run()
 /*****************************************************************************/
 Json BuildFileChecker::getExpandedBuildFile()
 {
-	auto& buildFile = m_state.getCentralState().chaletJson();
+	auto& buildFile = m_state.getCentralState().buildFile();
 
 	Json checked;
 	if (!checkNode(buildFile.root, checked))
 		return false;
 
+	const std::string kVariables{ "variables" };
 	const std::string kExternalDependencies{ "externalDependencies" };
 	const std::string kPackage{ "package" };
+	const std::string kPackagePaths{ "packagePaths" };
 	const std::string kTargets{ "targets" };
 	const std::string kDistribution{ "distribution" };
+
+	if (checked.contains(kVariables))
+	{
+		auto& packagePathsJson = checked[kVariables];
+
+		// Note: we use the SourcePackage overload of replaceVariablesInString here, but it shouldn't matter
+		checkNodeWithTargetPtr<SourcePackage>(packagePathsJson, nullptr);
+	}
 
 	if (checked.contains(kExternalDependencies))
 	{
@@ -174,6 +193,12 @@ Json BuildFileChecker::getExpandedBuildFile()
 			if (package != nullptr)
 				checkNodeWithTargetPtr(packageJson, package);
 		}
+	}
+
+	if (checked.contains(kPackagePaths))
+	{
+		auto& packagePathsJson = checked[kPackagePaths];
+		checkNodeWithTargetPtr<SourcePackage>(packagePathsJson, nullptr);
 	}
 
 	if (checked.contains(kTargets))
@@ -226,10 +251,10 @@ bool BuildFileChecker::checkNode(const Json& inNode, Json& outJson, const std::s
 			if (condition.is_string())
 			{
 				auto result = m_parser.conditionIsValid(inLastKey, condition.get<std::string>());
-				if (!result.has_value()) // syntax error
+				if (result == TriBool::Unset) // syntax error
 					return false;
 
-				bool conditionValid = *result;
+				bool conditionValid = result == TriBool::True;
 				outJson[kCondition] = conditionValid;
 				if (!conditionValid)
 					return false;

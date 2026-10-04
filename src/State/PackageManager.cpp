@@ -5,7 +5,7 @@
 
 #include "State/PackageManager.hpp"
 
-#include "ChaletJson/ChaletJsonParser.hpp"
+#include "ChaletJson/ChaletJsonFile.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "State/Package/SourcePackage.hpp"
@@ -147,12 +147,10 @@ bool PackageManager::doesBuildArtifactExist(const std::string& inName) const
 /*****************************************************************************/
 bool PackageManager::resolvePackagesFromSubPackagePathsAndChaletTargets()
 {
-	Unique<ChaletJsonParser> chaletJsonParser;
-
 	auto packages = std::move(m_impl->packages);
 	m_impl->packages.clear();
 
-	auto readPackagesIfAvailable = [this, &chaletJsonParser](const std::string& location, std::string buildFile) {
+	auto readPackagesIfAvailable = [this](const std::string& location, std::string buildFile) {
 		if (buildFile.empty())
 			buildFile = m_state.inputs.defaultInputFile();
 
@@ -166,12 +164,7 @@ bool PackageManager::resolvePackagesFromSubPackagePathsAndChaletTargets()
 		if (!Files::pathExists(resolved))
 			return true;
 
-		if (!chaletJsonParser)
-		{
-			chaletJsonParser = std::make_unique<ChaletJsonParser>(m_state);
-		}
-
-		if (!chaletJsonParser->readPackagesIfAvailable(resolved, location, m_impl->packageExternalTargets))
+		if (!ChaletJsonFile::readPackagesIfAvailable(m_state, resolved, location, m_impl->packageExternalTargets))
 		{
 			Diagnostic::error("Error importing packages from: {}", resolved);
 			return false;
@@ -249,10 +242,27 @@ bool PackageManager::initializePackages()
 		return false;
 	};
 
+	StringList requiredPackages;
+	for (auto& target : m_state.targets)
+	{
+		if (target->isSources())
+		{
+			auto& project = static_cast<SourceTarget&>(*target);
+			auto& importedPackages = project.importPackages();
+			if (importedPackages.empty())
+				continue;
+
+			for (auto& package : importedPackages)
+			{
+				resolveDependencies(package, requiredPackages);
+			}
+		}
+	}
+
 	for (auto& [name, pkg] : m_impl->packages)
 	{
 		// We only want to initialize the required packages
-		if (m_impl->packageDeps.find(name) == m_impl->packageDeps.end())
+		if (!List::contains(requiredPackages, name))
 			continue;
 
 		bool rootChanged = false;

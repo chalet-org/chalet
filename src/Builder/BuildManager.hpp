@@ -84,7 +84,7 @@ private:
 
 	Dictionary<StringList> m_fileCache;
 
-	CompileStrategy m_strategy;
+	Unique<ICompileStrategy> m_strategy;
 	Unique<AssemblyDumper> m_asmDumper;
 
 	Timer m_timer;

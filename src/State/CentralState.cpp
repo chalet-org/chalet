@@ -7,12 +7,12 @@
 
 #include <thread>
 
-#include "ChaletJson/CentralChaletJsonParser.hpp"
+#include "ChaletJson/ChaletJsonFileCentral.hpp"
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/DependencyManager.hpp"
-#include "SettingsJson/GlobalSettingsJsonParser.hpp"
-#include "SettingsJson/SettingsJsonParser.hpp"
+#include "SettingsJson/GlobalSettingsJsonFile.hpp"
+#include "SettingsJson/SettingsJsonFile.hpp"
 
 #include "DotEnv/DotEnvFileParser.hpp"
 #include "Platform/Arch.hpp"
@@ -93,10 +93,10 @@ bool CentralState::initialize()
 		state.osTargetVersion = m_inputs.getDefaultOsTargetVersion();
 		state.lastTarget = Values::All;
 
-		if (!parseGlobalSettingsJson(state))
+		if (!GlobalSettingsJsonFile::read(cache, state, m_shouldPerformUpdateCheck))
 			return false;
 
-		if (!parseLocalSettingsJson(state))
+		if (!SettingsJsonFile::read(m_inputs, *this, state))
 			return false;
 
 		if (m_inputs.osTargetName().empty())
@@ -120,7 +120,7 @@ bool CentralState::initialize()
 		return false;
 	}
 
-	if (!m_chaletJson.load(m_filename))
+	if (!m_buildFile.load(m_filename))
 		return false;
 
 	if (!cache.initialize(m_inputs))
@@ -131,7 +131,7 @@ bool CentralState::initialize()
 	bool cleanAll = route.isClean() && m_inputs.cleanAll();
 	if (route.isConfigure())
 	{
-		if (!parseBuildFile())
+		if (!ChaletJsonFileCentral::read(*this))
 			return false;
 
 		// if (!externalDependencies.empty())
@@ -145,7 +145,7 @@ bool CentralState::initialize()
 	}
 	else if (route.isCheck())
 	{
-		if (!parseBuildFile())
+		if (!ChaletJsonFileCentral::read(*this))
 			return false;
 
 		if (!createCache())
@@ -162,7 +162,7 @@ bool CentralState::initialize()
 		Timer timer;
 		Diagnostic::infoEllipsis("Reading Build File [{}]", m_filename);
 
-		if (!parseBuildFile())
+		if (!ChaletJsonFileCentral::read(*this))
 			return false;
 
 		if (!cleanAll)
@@ -212,7 +212,7 @@ bool CentralState::initializeForQuery()
 	if (!Files::pathExists(m_filename))
 		return true;
 
-	UNUSED(m_chaletJson.load(m_filename));
+	UNUSED(m_buildFile.load(m_filename));
 
 	Diagnostic::clearErrors();
 
@@ -240,7 +240,7 @@ bool CentralState::createCache()
 	cache.file().checkIfAppVersionChanged(m_inputs.appPath());
 	cache.file().checkIfThemeChanged();
 
-	if (!cache.createCacheFolder(CacheType::Local))
+	if (!cache.createLocalCacheFolder())
 	{
 		Diagnostic::error("There was an error creating the build cache.");
 		return false;
@@ -562,21 +562,21 @@ const CommandLineInputs& CentralState::inputs() const noexcept
 }
 
 /*****************************************************************************/
-JsonFile& CentralState::chaletJson() noexcept
+JsonFile& CentralState::buildFile() noexcept
 {
-	return m_chaletJson;
+	return m_buildFile;
 }
 
 /*****************************************************************************/
-const JsonFile& CentralState::chaletJson() const noexcept
+const JsonFile& CentralState::buildFile() const noexcept
 {
-	return m_chaletJson;
+	return m_buildFile;
 }
 
 /*****************************************************************************/
 const std::string& CentralState::filename() const noexcept
 {
-	return m_chaletJson.filename();
+	return m_buildFile.filename();
 }
 
 /*****************************************************************************/
@@ -592,28 +592,6 @@ bool CentralState::parseEnvFile()
 
 	DotEnvFileParser envParser(m_inputs);
 	return envParser.readVariablesFromInputs();
-}
-/*****************************************************************************/
-bool CentralState::parseGlobalSettingsJson(IntermediateSettingsState& outState)
-{
-	auto& settingsFile = cache.getSettings(SettingsType::Global);
-	GlobalSettingsJsonParser parser(*this, settingsFile);
-	return parser.serialize(outState);
-}
-
-/*****************************************************************************/
-bool CentralState::parseLocalSettingsJson(const IntermediateSettingsState& inState)
-{
-	auto& settingsFile = cache.getSettings(SettingsType::Local);
-	SettingsJsonParser parser(m_inputs, *this, settingsFile);
-	return parser.serialize(inState);
-}
-
-/*****************************************************************************/
-bool CentralState::parseBuildFile()
-{
-	CentralChaletJsonParser parser(*this);
-	return parser.serialize();
 }
 
 /*****************************************************************************/
@@ -677,22 +655,6 @@ void CentralState::addAllowedArchitecture(std::string&& inArch)
 bool CentralState::shouldPerformUpdateCheck() const
 {
 	return m_shouldPerformUpdateCheck;
-}
-
-/*****************************************************************************/
-void CentralState::shouldCheckForUpdate(const time_t inLastUpdate, const time_t inCurrent)
-{
-	time_t difference = inCurrent - inLastUpdate;
-
-	// LOG("lastUpdateCheck:", inLastUpdate);
-	// LOG("currentTime:", inCurrent);
-	// LOG("difference:", difference);
-
-	time_t checkDuration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours(24)).count();
-	// time_t checkDuration = 5;
-	// LOG("checkDuration:", checkDuration);
-
-	m_shouldPerformUpdateCheck = difference < 0 || difference >= checkDuration;
 }
 
 /*****************************************************************************/

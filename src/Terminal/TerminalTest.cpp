@@ -12,6 +12,13 @@
 namespace chalet
 {
 /*****************************************************************************/
+bool TerminalTest::run()
+{
+	TerminalTest terminalTest;
+	return terminalTest.initializeAndRun();
+}
+
+/*****************************************************************************/
 TerminalTest::TerminalTest() :
 #if defined(CHALET_WIN32)
 	kEsc('\x1b'),
@@ -20,11 +27,10 @@ TerminalTest::TerminalTest() :
 #endif
 	kWidth(64),
 	kSeparator(kWidth, '-')
-{
-}
+{}
 
 /*****************************************************************************/
-bool TerminalTest::run()
+bool TerminalTest::initializeAndRun()
 {
 	m_gray = Output::getAnsiStyle(Color::BrightBlack);
 	m_reset = Output::getAnsiStyle(Color::Reset);

@@ -9,7 +9,6 @@ namespace chalet
 {
 enum class SettingsType : u16
 {
-	None,
 	Global,
 	Local,
 };

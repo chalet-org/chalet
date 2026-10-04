@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Compile/CommandPool.hpp"
-#include "Compile/CompileToolchainController.hpp"
+#include "Compile/CompileToolchain.hpp"
 #include "Compile/NativeCompileAdapter.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Compile/ToolchainType.hpp"
@@ -19,7 +19,6 @@ class BuildState;
 struct CompileCommandsGenerator;
 
 class IModuleStrategy;
-using ModuleStrategy = Unique<IModuleStrategy>;
 
 class IModuleStrategy
 {
@@ -45,12 +44,12 @@ public:
 	CHALET_DISALLOW_COPY_MOVE(IModuleStrategy);
 	virtual ~IModuleStrategy() = default;
 
-	[[nodiscard]] static ModuleStrategy make(const ToolchainType inType, BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator);
+	[[nodiscard]] static Unique<IModuleStrategy> make(const ToolchainType inType, BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator);
 
 	virtual bool buildProject(const SourceTarget& inProject);
 
 	Unique<SourceOutputs> outputs;
-	Unique<CompileToolchainController> toolchain;
+	Unique<CompileToolchain> toolchain;
 
 protected:
 	virtual bool initialize();

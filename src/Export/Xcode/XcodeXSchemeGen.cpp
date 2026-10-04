@@ -172,7 +172,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		auto libraryPath = env.getLibraryPath();
 		if (!libraryPath.empty())
 		{
-			String::replaceAll(path, buildDir, buildDirReplace);
+			String::replaceAll(libraryPath, buildDir, buildDirReplace);
 			libraryPath = fmt::format("{}:${}", libraryPath, Environment::getLibraryPathKey());
 			environment.emplace(Environment::getLibraryPathKey(), libraryPath);
 		}
@@ -180,7 +180,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		auto frameworkPath = env.getFrameworkPath();
 		if (!frameworkPath.empty())
 		{
-			String::replaceAll(path, buildDir, buildDirReplace);
+			String::replaceAll(frameworkPath, buildDir, buildDirReplace);
 			frameworkPath = fmt::format("{}:${}", frameworkPath, Environment::getFrameworkPathKey());
 			environment.emplace(Environment::getFrameworkPathKey(), frameworkPath);
 		}

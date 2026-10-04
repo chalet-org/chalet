@@ -15,12 +15,13 @@ struct CommandLineInputs;
 
 struct SettingsManager
 {
-	explicit SettingsManager(const CommandLineInputs& inInputs);
-
-	bool run(const SettingsAction inAction);
+	static bool run(const CommandLineInputs& inInputs);
 
 private:
-	bool initialize();
+	explicit SettingsManager(const CommandLineInputs& inInputs);
+
+	bool initializeAndRun(const SettingsAction inAction);
+	bool initialize(const SettingsAction inAction);
 
 	bool runSettingsGet(Json& node);
 	bool runSettingsKeyQuery(Json& node);
@@ -44,8 +45,7 @@ private:
 	std::string m_key;
 	std::string m_value;
 
-	SettingsAction m_action = SettingsAction::Get;
-	SettingsType m_type = SettingsType::None;
+	SettingsType m_type = SettingsType::Local;
 
 	bool m_initialized = false;
 	bool m_yamlOutput = false;

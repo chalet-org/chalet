@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "Cache/CacheType.hpp"
 #include "Cache/WorkspaceInternalCacheFile.hpp"
 #include "Settings/SettingsType.hpp"
 #include "Json/JsonFile.hpp"
@@ -21,8 +20,8 @@ struct WorkspaceCache
 {
 	WorkspaceCache() = default;
 
-	bool createCacheFolder(const CacheType inCacheType);
-	bool exists(const CacheType inCacheType = CacheType::Local) const;
+	bool createLocalCacheFolder();
+	bool exists() const;
 	std::string getHashPath(const std::string& inIdentifier) const;
 	std::string getCachePath(const std::string& inIdentifier) const;
 
@@ -41,8 +40,7 @@ private:
 	friend struct CentralState;
 	friend struct SettingsManager;
 
-	const std::string& getCacheRef(const CacheType inCacheType) const;
-	void removeCacheFolder(const CacheType inCacheType);
+	void removeLocalCacheFolder();
 
 	bool initialize(const CommandLineInputs& inInputs);
 	bool initializeSettings(const CommandLineInputs& inInputs);
@@ -55,7 +53,6 @@ private:
 	JsonFile m_globalSettings;
 
 	std::string m_cacheFolderLocal;
-	// std::string m_cacheFolderGlobal;
 
 	bool m_settingsCreated = false;
 	bool m_removeOldCacheFolder = false;

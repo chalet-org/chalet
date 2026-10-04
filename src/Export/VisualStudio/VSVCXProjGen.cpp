@@ -22,9 +22,12 @@
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
+#include "System/DefinesGithub.hpp"
+#include "System/DefinesVersion.hpp"
 #include "System/Files.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Xml/XmlFile.hpp"
 
@@ -100,7 +103,7 @@ bool VSVCXProjGen::saveSourceTargetProjectFiles(const std::string& name)
 	auto projectFile = makeSubDirectoryAndGetProjectFile(name);
 
 	XmlFile filtersFile(fmt::format("{}.filters", projectFile));
-	if (!saveFiltersFile(filtersFile, BuildTargetType::Source))
+	if (!saveFiltersFile(filtersFile, projectFile, BuildTargetType::Source))
 		return false;
 
 	if (!saveSourceTargetProjectFile(name, projectFile, filtersFile))
@@ -146,7 +149,7 @@ bool VSVCXProjGen::saveScriptTargetProjectFiles(const std::string& name)
 	auto projectFile = makeSubDirectoryAndGetProjectFile(name);
 
 	XmlFile filtersFile(fmt::format("{}.filters", projectFile));
-	if (!saveFiltersFile(filtersFile, BuildTargetType::Script))
+	if (!saveFiltersFile(filtersFile, projectFile, BuildTargetType::Script))
 		return false;
 
 	if (!saveScriptTargetProjectFile(name, projectFile, filtersFile))
@@ -189,7 +192,7 @@ bool VSVCXProjGen::saveAllBuildTargetProjectFiles(const std::string& name)
 	auto projectFile = makeSubDirectoryAndGetProjectFile(name);
 
 	XmlFile filtersFile(fmt::format("{}.filters", projectFile));
-	if (!saveFiltersFile(filtersFile, BuildTargetType::Unknown))
+	if (!saveFiltersFile(filtersFile, projectFile, BuildTargetType::Unknown))
 		return false;
 
 	if (!saveAllTargetProjectFile(name, projectFile))
@@ -259,7 +262,7 @@ bool VSVCXProjGen::saveScriptTargetProjectFile(const std::string& inName, const 
 	addUserMacros(xmlRoot);
 	addGeneralProperties(xmlRoot, inName, BuildTargetType::Script);
 	addScriptProperties(xmlRoot);
-	addTargetFiles(xmlRoot, inName, outFiltersFile);
+	addTargetFiles(xmlRoot, inName, inFilename, outFiltersFile);
 	addProjectReferences(xmlRoot, inName);
 	addImportMsCppTargets(xmlRoot);
 
@@ -283,7 +286,7 @@ bool VSVCXProjGen::saveAllTargetProjectFile(const std::string& inName, const std
 	addUserMacros(xmlRoot);
 	addGeneralProperties(xmlRoot, inName, BuildTargetType::Unknown);
 	//
-	addAllTargetFiles(xmlRoot);
+	addAllTargetFiles(xmlRoot, inFilename);
 	addAllProjectReferences(xmlRoot);
 	addImportMsCppTargets(xmlRoot);
 
@@ -291,7 +294,7 @@ bool VSVCXProjGen::saveAllTargetProjectFile(const std::string& inName, const std
 }
 
 /*****************************************************************************/
-bool VSVCXProjGen::saveFiltersFile(XmlFile& outFile, const BuildTargetType inType)
+bool VSVCXProjGen::saveFiltersFile(XmlFile& outFile, const std::string& inFilename, const BuildTargetType inType)
 {
 	auto& xmlRoot = outFile.getRoot();
 
@@ -342,11 +345,7 @@ bool VSVCXProjGen::saveFiltersFile(XmlFile& outFile, const BuildTargetType inTyp
 	// we'll use this for the all target
 	else if (inType == BuildTargetType::Unknown)
 	{
-		xmlRoot.addElement("ItemGroup", [this](XmlElement& node) {
-			node.addElement("None", [this](XmlElement& node2) {
-				node2.addAttribute("Include", getResolvedInputFile());
-			});
-		});
+		addAllTargetFiles(xmlRoot, inFilename);
 	}
 
 	return true;
@@ -1168,12 +1167,13 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 }
 
 /*****************************************************************************/
-void VSVCXProjGen::addTargetFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const
+void VSVCXProjGen::addTargetFiles(XmlElement& outNode, const std::string& inName, const std::string& inFilename, XmlFile& outFiltersFile) const
 {
 	UNUSED(inName);
 
 	OrderedDictionary<StringList> sources;
 	std::vector<BuildState*> tempStates;
+	std::string extraFile;
 
 	for (auto& conf : m_vsConfigs)
 	{
@@ -1184,6 +1184,9 @@ void VSVCXProjGen::addTargetFiles(XmlElement& outNode, const std::string& inName
 			tempStates.emplace_back(conf.state);
 
 			auto targetFiles = targetAdapter.getFiles();
+			auto extra = targetAdapter.getExtraFile();
+			if (!extra.empty())
+				extraFile = std::move(extra);
 
 			for (auto& file : targetFiles)
 			{
@@ -1219,23 +1222,72 @@ void VSVCXProjGen::addTargetFiles(XmlElement& outNode, const std::string& inName
 			});
 		}
 	});*/
+
+	if (!extraFile.empty())
+	{
+		// Example key: _1_1_4_1_1_4_1_1_4my_3file_1json__JsonSchema
+		// needs to be relative to the sln directory
+
+		auto slnPath = String::getPathFolder(inFilename);
+		auto relativeSchemaPath = Files::getProximatePath(extraFile, slnPath);
+		Path::toWindows(relativeSchemaPath);
+
+		outNode.addElement("ProjectExtensions", [&sources, &relativeSchemaPath, &slnPath](XmlElement& node) {
+			node.addElement("VisualStudio", [&sources, &relativeSchemaPath, &slnPath](XmlElement& node2) {
+				node2.addElement("UserProperties", [&sources, &relativeSchemaPath, &slnPath](XmlElement& node3) {
+					for (auto& it : sources)
+					{
+						const auto& file = it.first;
+						// const auto& configs = it.second;
+
+						auto fileKey = Files::getProximatePath(file, slnPath);
+						String::replaceAll(fileKey, "_", "_3");
+						String::replaceAll(fileKey, ".", "_1");
+						String::replaceAll(fileKey, ":", "_2"); // untested since we get the relative path
+						String::replaceAll(fileKey, "/", "_4");
+						String::replaceAll(fileKey, "\\", "_4");
+						fileKey = fmt::format("{}__JsonSchema", fileKey);
+
+						node3.addAttribute(fileKey, relativeSchemaPath);
+					}
+				});
+			});
+		});
+	}
 }
 
 /*****************************************************************************/
-void VSVCXProjGen::addAllTargetFiles(XmlElement& outNode) const
+void VSVCXProjGen::addAllTargetFiles(XmlElement& outNode, const std::string& inFilename) const
 {
-	StringList files;
+	auto inputFile = getResolvedInputFile();
+	auto schemaPath = getRemoteSchemaPath("chalet.schema.json");
 
-	files.emplace_back(getResolvedInputFile());
-
-	outNode.addElement("ItemGroup", [&files](XmlElement& node) {
-		for (auto& file : files)
-		{
-			node.addElement("None", [&file](XmlElement& node2) {
-				node2.addAttribute("Include", file);
-			});
-		}
+	outNode.addElement("ItemGroup", [&inputFile](XmlElement& node) {
+		node.addElement("None", [&inputFile](XmlElement& node2) {
+			node2.addAttribute("Include", inputFile);
+		});
 	});
+
+	if (!schemaPath.empty())
+	{
+		auto slnPath = String::getPathFolder(inFilename);
+
+		outNode.addElement("ProjectExtensions", [&inputFile, &schemaPath, &slnPath](XmlElement& node) {
+			node.addElement("VisualStudio", [&inputFile, &schemaPath, &slnPath](XmlElement& node2) {
+				node2.addElement("UserProperties", [&inputFile, &schemaPath, &slnPath](XmlElement& node3) {
+					auto fileKey = Files::getProximatePath(inputFile, slnPath);
+					String::replaceAll(fileKey, "_", "_3");
+					String::replaceAll(fileKey, ".", "_1");
+					String::replaceAll(fileKey, ":", "_2"); // untested since we get the relative path
+					String::replaceAll(fileKey, "/", "_4");
+					String::replaceAll(fileKey, "\\", "_4");
+					fileKey = fmt::format("{}__JsonSchema", fileKey);
+
+					node3.addAttribute(fileKey, schemaPath);
+				});
+			});
+		});
+	}
 }
 
 /*****************************************************************************/
@@ -1406,5 +1458,11 @@ std::string VSVCXProjGen::getResolvedInputFile() const
 		inputFile = firstState.inputs.inputFile();
 
 	return inputFile;
+}
+
+/*****************************************************************************/
+std::string VSVCXProjGen::getRemoteSchemaPath(const std::string& inFile) const
+{
+	return fmt::format("{}/refs/tags/v{}/schema/{}", CHALET_GITHUB_RAW_ROOT, CHALET_VERSION, inFile);
 }
 }

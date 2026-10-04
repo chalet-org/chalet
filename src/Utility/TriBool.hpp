@@ -7,9 +7,10 @@
 
 namespace chalet
 {
-enum class CacheType : u16
+enum class TriBool : u8
 {
-	Global,
-	Local,
+	False,
+	True,
+	Unset
 };
 }

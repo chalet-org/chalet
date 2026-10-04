@@ -93,7 +93,7 @@ bool CompileStrategyMakefile::addProject(const SourceTarget& inProject)
 	{
 		auto& hash = m_hashes.at(name);
 		auto& toolchain = m_toolchains.at(name);
-		m_generator->addProjectRecipes(inProject, *outputs, toolchain, hash);
+		m_generator->addProjectRecipes(inProject, *outputs, *toolchain, hash);
 
 		Files::ofstream(buildFile) << m_generator->getContents(buildFile)
 								   << std::endl;
@@ -140,7 +140,7 @@ bool CompileStrategyMakefile::buildProject(const SourceTarget& inProject)
 	}
 	else
 	{
-		m_filesUpdated = true;
+		m_anyFilesUpdated = true;
 		return false;
 	}
 }

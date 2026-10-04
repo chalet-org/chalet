@@ -5,6 +5,7 @@
 
 #include "Builder/BuildManager.hpp"
 
+#include "BuildEnvironment/BuildEnvironmentEmscripten.hpp"
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Builder/BatchValidator.hpp"
 #include "Builder/CmakeBuilder.hpp"
@@ -17,7 +18,7 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/AssemblyDumper.hpp"
-#include "Compile/CompileToolchainController.hpp"
+#include "Compile/CompileToolchain.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
 #include "Process/Process.hpp"
@@ -469,7 +470,7 @@ void BuildManager::printBuildInformation() const
 /*****************************************************************************/
 bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 {
-	auto buildToolchain = std::make_unique<CompileToolchainController>(inProject);
+	auto buildToolchain = std::make_unique<CompileToolchain>(inProject);
 	auto& fileCache = m_fileCache[inProject.buildSuffix()];
 	auto outputs = m_state.paths.getOutputs(inProject, fileCache);
 
@@ -1116,6 +1117,8 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		cmd.emplace_back("--serve_after_close");
 		cmd.emplace_back("--serve_after_exit");
 		cmd.emplace_back("--no_emrun_detect");
+		cmd.emplace_back("--kill_start");
+		cmd.emplace_back("--kill_exit");
 
 		if (Output::showCommands())
 			cmd.emplace_back("--verbose");
@@ -1132,6 +1135,12 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 
 		if (!runArguments.empty())
 			cmd.emplace_back("--");
+
+		if (!runArguments.empty())
+		{
+			auto* emscripten = static_cast<BuildEnvironmentEmscripten*>(m_state.environment);
+			emscripten->generateAppArgumentsWorkaround(runArguments);
+		}
 	}
 	else
 	{

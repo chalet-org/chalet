@@ -5,6 +5,7 @@
 
 #include "Compile/CompileCommandsGenerator.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -40,12 +41,12 @@ CompileCommandsGenerator::~CompileCommandsGenerator() = default;
 /*****************************************************************************/
 bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain, const SourceOutputs& inOutputs)
 {
-	bool quotedPaths = inToolchain->linker->quotedPaths();
-	bool generateDependencies = inToolchain->linker->generateDependencies();
+	bool quotedPaths = inToolchain.linker->quotedPaths();
+	bool generateDependencies = inToolchain.linker->generateDependencies();
 
-	inToolchain->setQuotedPaths(false);
-	inToolchain->setGenerateDependencies(false);
-	inToolchain->setForceActualPchPath(true);
+	inToolchain.setQuotedPaths(false);
+	inToolchain.setGenerateDependencies(false);
+	inToolchain.setForceActualPchPath(true);
 
 	std::string dummyArch;
 	for (auto& group : inOutputs.groups)
@@ -65,9 +66,9 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 		}
 	}
 
-	inToolchain->setQuotedPaths(quotedPaths);
-	inToolchain->setGenerateDependencies(generateDependencies);
-	inToolchain->setForceActualPchPath(false);
+	inToolchain.setQuotedPaths(quotedPaths);
+	inToolchain.setGenerateDependencies(generateDependencies);
+	inToolchain.setForceActualPchPath(false);
 
 	return true;
 }
@@ -141,12 +142,12 @@ StringList CompileCommandsGenerator::getCommand(CompileToolchain& inToolchain, c
 				auto baseFolder = String::getPathFolder(object);
 				auto filename = String::getPathFilename(object);
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, inArch, filename);
-				return inToolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, dep, inArch);
+				return inToolchain.compilerCxx->getPrecompiledHeaderCommand(source, outObject, dep, inArch);
 			}
 			else
 #endif
 			{
-				return inToolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, dep, inArch);
+				return inToolchain.compilerCxx->getPrecompiledHeaderCommand(source, object, dep, inArch);
 			}
 		}
 
@@ -154,7 +155,7 @@ StringList CompileCommandsGenerator::getCommand(CompileToolchain& inToolchain, c
 		case SourceType::CPlusPlus:
 		case SourceType::ObjectiveC:
 		case SourceType::ObjectiveCPlusPlus:
-			return inToolchain->compilerCxx->getCommand(source, object, dep, inGroup.type);
+			return inToolchain.compilerCxx->getCommand(source, object, dep, inGroup.type);
 
 		case SourceType::WindowsResource:
 		case SourceType::Unknown:
@@ -170,6 +171,11 @@ void CompileCommandsGenerator::addCompileCommand(const std::string& inFile, Stri
 {
 	if (inCommand.empty())
 		return;
+
+	for (auto& part : inCommand)
+	{
+		String::replaceAll(part, "\"", "");
+	}
 
 	auto compileCommand = std::make_unique<CompileCommand>();
 	compileCommand->file = inFile;
@@ -197,6 +203,7 @@ bool CompileCommandsGenerator::save() const
 		outJson.push_back(std::move(node));
 	}
 
+	const bool isExcluded = m_state.environment->isEmscripten();
 	if (!m_compileCommands.empty())
 	{
 		if (!JsonFile::saveToFile(outJson, outputFile))
@@ -205,12 +212,15 @@ bool CompileCommandsGenerator::save() const
 			return false;
 		}
 
-		if (!String::equals(String::getPathFolder(outputFile), outputDirectory))
+		if (!isExcluded)
 		{
-			if (!Files::copySilent(outputFile, outputDirectory))
+			if (!String::equals(String::getPathFolder(outputFile), outputDirectory))
 			{
-				Diagnostic::error("{} could not be copied to: '{}'", kCompileCommandsJson, outputDirectory);
-				return false;
+				if (!Files::copySilent(outputFile, outputDirectory))
+				{
+					Diagnostic::error("{} could not be copied to: '{}'", kCompileCommandsJson, outputDirectory);
+					return false;
+				}
 			}
 		}
 	}
@@ -230,7 +240,8 @@ bool CompileCommandsGenerator::save() const
 				targetFolder = project.targetFolder();
 			}
 		}
-		if (!targetFolder.empty())
+
+		if (!targetFolder.empty() && !isExcluded)
 		{
 			auto lastCompileCommands = fmt::format("{}/{}/{}", buildOutputDir, targetFolder, kCompileCommandsJson);
 			if (Files::pathExists(lastCompileCommands))

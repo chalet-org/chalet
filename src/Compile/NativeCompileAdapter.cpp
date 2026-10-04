@@ -55,6 +55,23 @@ bool NativeCompileAdapter::checkDependentTargets(const SourceTarget& inProject) 
 }
 
 /*****************************************************************************/
+bool NativeCompileAdapter::checkDependentMiscellaneousFiles(const SourceTarget& inProject) const
+{
+	StringList linkerFiles = inProject.getLinkerDependentFiles();
+	if (!linkerFiles.empty())
+	{
+		auto& sources = m_state.cache.file().sources();
+		for (auto& miscFile : linkerFiles)
+		{
+			if (sources.fileChangedOrDoesNotExist(miscFile))
+				return true;
+		}
+	}
+
+	return false;
+}
+
+/*****************************************************************************/
 bool NativeCompileAdapter::rebuildRequiredFromLinks(const SourceTarget& inProject) const
 {
 	bool result = false;
@@ -177,7 +194,7 @@ CommandPool::Settings NativeCompileAdapter::getCommandPoolSettings() const
 }
 
 /*****************************************************************************/
-CommandPool::CmdList NativeCompileAdapter::getLinkCommandList(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const
+CommandPool::CmdList NativeCompileAdapter::getLinkCommandList(const SourceTarget& inProject, CompileToolchain& inToolchain, const SourceOutputs& inOutputs) const
 {
 	CommandPool::CmdList ret;
 	ret.emplace_back(getLinkCommand(inProject, inToolchain, inOutputs));
@@ -185,7 +202,7 @@ CommandPool::CmdList NativeCompileAdapter::getLinkCommandList(const SourceTarget
 }
 
 /*****************************************************************************/
-CommandPool::Cmd NativeCompileAdapter::getLinkCommand(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const
+CommandPool::Cmd NativeCompileAdapter::getLinkCommand(const SourceTarget& inProject, CompileToolchain& inToolchain, const SourceOutputs& inOutputs) const
 {
 	CommandPool::Cmd cmd;
 	cmd.command = inToolchain.getOutputTargetCommand(inOutputs.target, inOutputs.objectListLinker);

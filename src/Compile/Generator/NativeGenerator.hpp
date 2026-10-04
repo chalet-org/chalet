@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Compile/CommandPool.hpp"
-#include "Compile/CompileToolchainController.hpp"
+#include "Compile/CompileToolchain.hpp"
 #include "Compile/NativeCompileAdapter.hpp"
 #include "State/SourceFileGroup.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -21,14 +21,14 @@ class NativeGenerator
 public:
 	NativeGenerator(BuildState& inState);
 
-	bool addProject(const SourceTarget& inProject, const Unique<SourceOutputs>& inOutputs, CompileToolchain& inToolchain);
+	bool addProject(const SourceTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain);
 
 	bool buildProject(const SourceTarget& inProject);
 
 	void initialize();
 	void dispose() const;
 
-	bool targetCompiled() const noexcept;
+	bool anyFilesUpdated() const noexcept;
 
 private:
 	CommandPool::CmdList getPchCommands(const std::string& pchTarget);
@@ -46,9 +46,10 @@ private:
 	mutable Unique<CommandPool> m_commandPool;
 
 	Dictionary<CommandPool::JobList> m_targets;
+	Dictionary<Unique<CommandPool::Job>> m_lateLinkCmds;
 
 	const SourceTarget* m_project = nullptr;
-	CompileToolchainController* m_toolchain = nullptr;
+	CompileToolchain* m_toolchain = nullptr;
 
 	std::unordered_set<std::string> m_fileCache;
 
@@ -57,6 +58,6 @@ private:
 
 	bool m_pchChanged = false;
 	bool m_sourcesChanged = false;
-	bool m_linkTarget = false;
+	bool m_anyFilesUpdated = false;
 };
 }

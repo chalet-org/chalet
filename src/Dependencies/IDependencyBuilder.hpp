@@ -30,5 +30,4 @@ protected:
 	CentralState& m_centralState;
 	ExternalDependencyCache& m_dependencyCache;
 };
-using DependencyBuilder = Unique<IDependencyBuilder>;
 }

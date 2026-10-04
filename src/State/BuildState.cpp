@@ -9,13 +9,13 @@
 #include "Builder/BuildManager.hpp"
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "ChaletJson/ChaletJsonParser.hpp"
+#include "ChaletJson/ChaletJsonFile.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "DotEnv/DotEnvFileGenerator.hpp"
 #include "DotEnv/DotEnvFileParser.hpp"
 #include "Export/IProjectExporter.hpp"
 #include "Process/Environment.hpp"
-#include "SettingsJson/ToolchainSettingsJsonParser.hpp"
+#include "SettingsJson/SettingsJsonFileToolchain.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -33,6 +33,7 @@
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/MesonTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
+#include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -59,8 +60,8 @@ struct BuildState::Impl
 	BuildPaths paths;
 	PackageManager packages;
 	BuildConfiguration configuration;
-	std::vector<BuildTarget> targets;
-	std::vector<DistTarget> distribution;
+	std::vector<Unique<IBuildTarget>> targets;
+	std::vector<Unique<IDistTarget>> distribution;
 
 	Unique<IBuildEnvironment> environment;
 
@@ -132,7 +133,7 @@ bool BuildState::initialize()
 		return false;
 	}
 
-	if (!parseChaletJson())
+	if (!ChaletJsonFile::read(*this))
 		return false;
 
 	// Update settings after toolchain & chalet.json have been parsed
@@ -237,6 +238,18 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 		if (target->isProcess())
 		{
 			auto& process = static_cast<const ProcessBuildTarget&>(*target);
+			auto& depends = process.dependsOn();
+			for (auto& dep : depends)
+			{
+				if (String::startsWith(buildDir, dep))
+				{
+					List::addIfDoesNotExist(dependsOn, dep.substr(buildDir.size() + 1));
+				}
+			}
+		}
+		else if (target->isScript())
+		{
+			auto& process = static_cast<const ScriptBuildTarget&>(*target);
 			auto& depends = process.dependsOn();
 			for (auto& dep : depends)
 			{
@@ -465,9 +478,7 @@ bool BuildState::checkForExceptionalToolchainCases()
 	bool isVisualStudio = preference.type == ToolchainType::VisualStudio || preference.type == ToolchainType::VisualStudioLLVM;
 	if (isVisualStudio)
 	{
-		auto& settingsFile = m_impl->centralState.cache.getSettings(SettingsType::Local);
-		ToolchainSettingsJsonParser parser(*this, settingsFile);
-		if (!parser.validatePathsWithoutFullParseAndEraseToolchainOnFailure())
+		if (!SettingsJsonFileToolchain::isCurrentToolchainStillValid(*this))
 		{
 			auto& preferenceName = inputs.toolchainPreferenceName();
 			inputs.setToolchainPreference(std::string(preferenceName));
@@ -514,9 +525,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 		m_impl->checkForEnvironment = true;
 	}
 
-	auto& settingsFile = m_impl->centralState.cache.getSettings(SettingsType::Local);
-	ToolchainSettingsJsonParser parser(*this, settingsFile);
-	if (!parser.serialize())
+	if (!SettingsJsonFileToolchain::read(*this))
 		return false;
 
 	ToolchainType type = IBuildEnvironment::detectToolchainTypeFromPath(toolchain.compilerCxxAny().path, *this);
@@ -555,7 +564,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 	if (m_impl->environment != nullptr && toolchain.version().empty())
 		toolchain.setVersion(m_impl->environment->detectedVersion());
 
-	if (!parser.validatePaths())
+	if (!SettingsJsonFileToolchain::validatePaths(*this))
 		return false;
 
 	Output::setShowCommandOverride(false);
@@ -571,13 +580,6 @@ bool BuildState::parseToolchainFromSettingsJson()
 	Output::setShowCommandOverride(true);
 
 	return true;
-}
-
-/*****************************************************************************/
-bool BuildState::parseChaletJson()
-{
-	ChaletJsonParser parser(*this);
-	return parser.serialize();
 }
 
 /*****************************************************************************/
@@ -662,6 +664,7 @@ bool BuildState::initializeBuild()
 		}
 	}
 
+	std::vector<const SourceTarget*> sourceTargets;
 	for (auto& target : targets)
 	{
 		if (target->isSources())
@@ -669,6 +672,8 @@ bool BuildState::initializeBuild()
 			auto& project = static_cast<SourceTarget&>(*target);
 			paths.setBuildDirectoriesBasedOnProjectKind(project);
 			project.parseOutputFilename();
+
+			sourceTargets.emplace_back(&project);
 		}
 	}
 
@@ -725,8 +730,11 @@ bool BuildState::initializeBuild()
 #endif
 				}
 
-				if (!project.resolveLinksFromProject(targets, inputs.inputFile()))
-					return false;
+				for (auto& projectB : sourceTargets)
+				{
+					if (!project.resolveLinksFromProject(*projectB, inputs.inputFile()))
+						return false;
+				}
 			}
 
 			if (!target->isSubChalet() && !target->initialize())

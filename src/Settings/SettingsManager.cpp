@@ -15,32 +15,54 @@
 
 namespace chalet
 {
+namespace
+{
+SettingsAction getSettingsActionFromRouteType(RouteType inRouteType)
+{
+	switch (inRouteType)
+	{
+		case RouteType::SettingsSet:
+			return SettingsAction::Set;
+		case RouteType::SettingsUnset:
+			return SettingsAction::Unset;
+		case RouteType::SettingsGetKeys:
+			return SettingsAction::QueryKeys;
+		case RouteType::SettingsGet:
+		default:
+			return SettingsAction::Get;
+	}
+}
+}
+
 /*****************************************************************************/
 SettingsManager::SettingsManager(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
 	m_key(inInputs.settingsKey()),
 	m_value(inInputs.settingsValue()),
 	m_type(inInputs.settingsType())
+{}
+
+/*****************************************************************************/
+bool SettingsManager::run(const CommandLineInputs& inInputs)
 {
+	const auto& route = inInputs.route();
+
+	SettingsAction settingsAction = getSettingsActionFromRouteType(route.type());
+	SettingsManager settingsMgr(inInputs);
+	if (!settingsMgr.initializeAndRun(settingsAction))
+		return true;
+
+	return true;
 }
 
 /*****************************************************************************/
-bool SettingsManager::run(const SettingsAction inAction)
+bool SettingsManager::initializeAndRun(const SettingsAction inAction)
 {
-
-	if (m_type == SettingsType::None)
-	{
-		Diagnostic::error("There was an error determining the settings request");
-		return false;
-	}
-
-	m_action = inAction;
-
-	if (!initialize())
-		return m_action == SettingsAction::QueryKeys;
+	if (!initialize(inAction))
+		return inAction == SettingsAction::QueryKeys;
 
 	auto& settings = getSettings();
-	switch (m_action)
+	switch (inAction)
 	{
 		case SettingsAction::Get:
 			if (!runSettingsGet(settings.root))
@@ -72,7 +94,7 @@ bool SettingsManager::run(const SettingsAction inAction)
 }
 
 /*****************************************************************************/
-bool SettingsManager::initialize()
+bool SettingsManager::initialize(const SettingsAction inAction)
 {
 	if (m_initialized)
 		return true;
@@ -87,7 +109,7 @@ bool SettingsManager::initialize()
 	auto& filename = settings.filename();
 	if (!Files::pathExists(filename))
 	{
-		if (m_action != SettingsAction::QueryKeys)
+		if (inAction != SettingsAction::QueryKeys)
 		{
 			if (m_type == SettingsType::Global)
 				Diagnostic::error("File '{}' doesn't exist.", filename);

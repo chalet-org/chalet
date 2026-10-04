@@ -175,7 +175,7 @@ bool CompilerTools::parseVersionString(CompilerInfo& outInfo)
 bool CompilerTools::validate()
 {
 	bool valid = true;
-	// Note: These get validated in ToolchainSettingsJsonParser::makeToolchain
+	// Note: These get validated in SettingsJsonFileToolchain
 	//  this is a fallback...
 	//
 	if (m_strategy == StrategyType::None)

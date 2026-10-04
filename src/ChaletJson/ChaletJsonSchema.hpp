@@ -109,6 +109,7 @@ class ChaletJsonSchema
 		TargetSourceConfigureFiles,
 		TargetSourceCopyFilesOnRun,
 		TargetSourceImportPackages,
+		TargetSourceDependsOn,
 		//
 		TargetSourceMetadata,
 		TargetSourceMetadataName,
@@ -157,6 +158,9 @@ class ChaletJsonSchema
 		TargetSourceCxxJustMyCodeDebugging,
 		TargetSourceCxxWindowsSubSystem,
 		TargetSourceCxxWindowsEntryPoint,
+		TargetSourceCxxEmscriptenPreloadFiles,
+		TargetSourceCxxEmscriptenEmbedFiles,
+		TargetSourceCxxEmscriptenShellFile,
 		//
 		TargetScript,
 		TargetScriptFile,

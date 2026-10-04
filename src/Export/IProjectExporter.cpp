@@ -44,7 +44,7 @@ IProjectExporter::IProjectExporter(const CommandLineInputs& inInputs, const Expo
 IProjectExporter::~IProjectExporter() = default;
 
 /*****************************************************************************/
-[[nodiscard]] ProjectExporter IProjectExporter::make(const ExportKind inKind, const CommandLineInputs& inInputs)
+[[nodiscard]] Unique<IProjectExporter> IProjectExporter::make(const ExportKind inKind, const CommandLineInputs& inInputs)
 {
 	switch (inKind)
 	{
@@ -69,7 +69,7 @@ IProjectExporter::~IProjectExporter() = default;
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented ProjectExporter requested: {}", static_cast<i32>(inKind));
+	Diagnostic::errorAbort("Unimplemented project exporter requested: {}", static_cast<i32>(inKind));
 	return nullptr;
 }
 

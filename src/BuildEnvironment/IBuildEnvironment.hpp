@@ -15,7 +15,6 @@ class BuildState;
 struct SourceTarget;
 
 struct IBuildEnvironment;
-using BuildEnvironment = Unique<IBuildEnvironment>;
 
 struct IBuildEnvironment
 {

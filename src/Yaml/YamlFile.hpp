@@ -28,8 +28,9 @@ private:
 	std::string getNodeAsString(const std::string& inKey, const Json& inValue, const size_t inIndent = 0, const bool inArray = false) const;
 
 	StringList parseAbbreviatedStringList(const std::string& inValue) const;
-	std::vector<f32> parseAbbreviatedNumericList(std::string inString) const;
+	std::vector<f64> parseAbbreviatedNumericList(std::string inString) const;
 	Json parseAbbreviatedObject(const std::string& inValue) const;
+	bool parseNumeric(Json& outNode, const std::string& inValue) const;
 
 	const std::string& m_filename;
 };

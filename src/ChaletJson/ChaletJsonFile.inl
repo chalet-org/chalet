@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "ChaletJson/ChaletJsonParser.hpp"
+#include "ChaletJson/ChaletJsonFile.hpp"
 
 #include "Core/CommandLineInputs.hpp"
 
@@ -11,7 +11,7 @@ namespace chalet
 {
 /*****************************************************************************/
 template <typename T>
-bool ChaletJsonParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const
+bool ChaletJsonFile::valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const
 {
 	if (!valueMatchesSearchKeyPattern(inKey, inSearch, inStatus))
 		return false;

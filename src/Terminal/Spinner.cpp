@@ -106,7 +106,14 @@ bool Spinner::stop()
 		result = false;
 		if (m_thread->joinable())
 		{
-			m_thread->join();
+			CHALET_TRY
+			{
+				m_thread->join();
+			}
+			CHALET_CATCH(...)
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			}
 			m_thread.reset();
 			result = true;
 		}
