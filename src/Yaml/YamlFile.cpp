@@ -10,6 +10,16 @@
 
 namespace chalet
 {
+namespace
+{
+inline bool canParseAsNumericList(const std::string& inValue)
+{
+	if (inValue.find('-') != std::string::npos && inValue.front() != '-')
+		return false;
+
+	return inValue.find_first_not_of("0123456789-., ") == std::string::npos;
+}
+}
 /*****************************************************************************/
 bool YamlFile::parse(Json& outJson, const std::string& inFilename, const bool inError)
 {
@@ -312,7 +322,7 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 				if (value.front() == '[' && value.back() == ']')
 				{
 					value = value.substr(1, value.size() - 2);
-					if (value.find_first_not_of("0123456789-., ") == std::string::npos)
+					if (canParseAsNumericList(value))
 						node[key] = parseAbbreviatedNumericList(value);
 					else
 						node[key] = parseAbbreviatedStringList(value);
@@ -355,7 +365,7 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 			if (line.front() == '[' && line.back() == ']')
 			{
 				line = line.substr(1, line.size() - 2);
-				if (line.find_first_not_of("0123456789-., ") == std::string::npos)
+				if (canParseAsNumericList(line))
 					node.push_back(parseAbbreviatedNumericList(line));
 				else
 					node.push_back(parseAbbreviatedStringList(line));
@@ -463,6 +473,9 @@ Json YamlFile::parseAbbreviatedObject(const std::string& inValue) const
 /*****************************************************************************/
 bool YamlFile::parseNumeric(Json& outNode, const std::string& inValue) const
 {
+	if (inValue.find('-') != std::string::npos && inValue.front() != '-')
+		return false;
+
 	auto foundInteger = inValue.find_first_not_of("0123456789-");
 	if (foundInteger == std::string::npos)
 	{
@@ -600,6 +613,11 @@ std::string YamlFile::getNodeAsString(const std::string& inKey, const Json& node
 		if (!val.empty())
 		{
 			auto foundFloat = val.find_first_not_of("0123456789-.");
+			if (foundFloat && val.find('-') != std::string::npos && val.front() != '-')
+			{
+				foundFloat = false;
+			}
+
 			auto startsWithHash = val.front() == '#';
 			auto startsWithAsterisk = val.front() == '*';
 			auto startsWithAmpersand = val.front() == '&';

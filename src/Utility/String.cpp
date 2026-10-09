@@ -305,14 +305,14 @@ StringList String::split(std::string_view inString, const char inSeparator, cons
 	size_t nextNonChar = 0;
 
 	bool nonCharFound = false;
-	while (itr != std::string::npos)
+	while (itr != std::string_view::npos)
 	{
 		itr = inString.find(inSeparator);
 
 		sub = inString.substr(0, itr);
 		nextNonChar = inString.find_first_not_of(inSeparator, itr);
 
-		nonCharFound = nextNonChar != std::string::npos;
+		nonCharFound = nextNonChar != std::string_view::npos;
 		inString = inString.substr(nonCharFound ? nextNonChar : itr + 1);
 		if (nonCharFound)
 			itr = nextNonChar;
@@ -344,14 +344,14 @@ StringList String::split(std::string_view inString, const std::string_view inSep
 	size_t nextNonChar = 0;
 
 	bool nonCharFound = false;
-	while (itr != std::string::npos)
+	while (itr != std::string_view::npos)
 	{
 		itr = inString.find(inSeparator);
 
 		sub = inString.substr(0, itr);
 		nextNonChar = inString.find_first_not_of(inSeparator, itr);
 
-		nonCharFound = nextNonChar != std::string::npos;
+		nonCharFound = nextNonChar != std::string_view::npos;
 		inString = inString.substr(nonCharFound ? nextNonChar : itr + 1);
 		if (nonCharFound)
 			itr = nextNonChar;
