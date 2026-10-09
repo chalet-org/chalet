@@ -168,8 +168,6 @@ void String::replaceAll(std::string& outString, const std::string_view inFrom, c
 		outString.replace(pos, inFrom.length(), inTo);
 		pos += inTo.length();
 	}
-
-	return;
 }
 
 /*****************************************************************************/
@@ -294,14 +292,14 @@ std::string String::join(StringList&& inList, const std::string_view inSeparator
 }
 
 /*****************************************************************************/
-StringList String::split(std::string inString, const char inSeparator, const size_t inMinLength)
+StringList String::split(std::string_view inString, const char inSeparator, const size_t inMinLength)
 {
 	StringList ret;
 
 	if (inString.empty())
 		return ret;
 
-	std::string sub;
+	std::string_view sub;
 
 	size_t itr = 0;
 	size_t nextNonChar = 0;
@@ -322,7 +320,7 @@ StringList String::split(std::string inString, const char inSeparator, const siz
 		if (!sub.empty())
 		{
 			while (sub.back() == inSeparator)
-				sub.pop_back();
+				sub = sub.substr(0, sub.size() - 1u);
 		}
 
 		if (sub.size() >= inMinLength)
@@ -333,14 +331,14 @@ StringList String::split(std::string inString, const char inSeparator, const siz
 }
 
 /*****************************************************************************/
-StringList String::split(std::string inString, const std::string_view inSeparator, const size_t inMinLength)
+StringList String::split(std::string_view inString, const std::string_view inSeparator, const size_t inMinLength)
 {
 	StringList ret;
 
 	if (inString.empty())
 		return ret;
 
-	std::string sub;
+	std::string_view sub;
 
 	size_t itr = 0;
 	size_t nextNonChar = 0;
@@ -361,7 +359,7 @@ StringList String::split(std::string inString, const std::string_view inSeparato
 		if (!sub.empty())
 		{
 			while (inSeparator.size() == 1 && sub.back() == inSeparator.front())
-				sub.pop_back();
+				sub = sub.substr(0, sub.size() - 1u);
 		}
 
 		if (sub.size() >= inMinLength)
