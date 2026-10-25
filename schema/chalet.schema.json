@@ -1162,6 +1162,9 @@
 				"copyFilesOnRun": {
 					"$ref": "#/definitions/target-copyFilesOnRun"
 				},
+				"generateRenderDocCaptureSettings": {
+					"$ref": "#/definitions/target-generateRenderDocCaptureSettings"
+				},
 				"runWorkingDirectory": {
 					"$ref": "#/definitions/target-runWorkingDirectory"
 				}
@@ -1190,6 +1193,9 @@
 				},
 				"^copyFilesOnRun\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-copyFilesOnRun"
+				},
+				"^generateRenderDocCaptureSettings\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-generateRenderDocCaptureSettings"
 				},
 				"^runWorkingDirectory\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-runWorkingDirectory"
@@ -1464,6 +1470,11 @@
 					}
 				}
 			]
+		},
+		"target-generateRenderDocCaptureSettings": {
+			"type": "boolean",
+			"description": "true to generate a capture settings file (*.cap) for running the application through RenderDoc. false to disable (default).\n\nThis would only be applicable if the executable application uses a rendering API supported by RenderDoc like OpenGL, Vulkan, Direct3D, etc.",
+			"default": false
 		},
 		"target-source-metadata": {
 			"description": "Metadata to assign to source targets that can be retrieved with the `PROJECT_` prefix within configure files.\n(See: `configureFiles`)",

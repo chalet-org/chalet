@@ -21,16 +21,16 @@
 namespace chalet
 {
 /*****************************************************************************/
-DotEnvFileGenerator DotEnvFileGenerator::make(const BuildState& inState)
+std::unique_ptr<DotEnvFileGenerator> DotEnvFileGenerator::make(const BuildState& inState)
 {
-	DotEnvFileGenerator env;
+	auto env = std::make_unique<DotEnvFileGenerator>();
 
 	auto addEnvironmentPath = [&inState, &env](const char* inKey, const StringList& inAdditionalPaths = StringList()) {
 		auto path = Environment::getString(inKey);
 		auto outPath = inState.workspace.makePathVariable(path, inAdditionalPaths);
 
 		// if (!String::equals(outPath, path))
-		env.set(inKey, outPath);
+		env->set(inKey, outPath);
 	};
 
 	StringList libDirs;
@@ -53,7 +53,7 @@ DotEnvFileGenerator DotEnvFileGenerator::make(const BuildState& inState)
 	StringList allPaths = List::combineRemoveDuplicates(libDirs, frameworks, sysroot);
 	addEnvironmentPath("PATH", allPaths);
 
-	env.setRunPaths(inState.workspace.makePathVariable(std::string(), allPaths));
+	env->setRunPaths(inState.workspace.makePathVariable(std::string(), allPaths));
 
 #if defined(CHALET_LINUX)
 	// Linux uses LD_LIBRARY_PATH to resolve the correct file dependencies at runtime
@@ -119,7 +119,13 @@ std::string DotEnvFileGenerator::getFrameworkPath() const
 }
 
 /*****************************************************************************/
-bool DotEnvFileGenerator::save(const std::string& inFilename)
+const Dictionary<std::string>& DotEnvFileGenerator::variables() const noexcept
+{
+	return m_variables;
+}
+
+/*****************************************************************************/
+bool DotEnvFileGenerator::save(const std::string& inFilename) const
 {
 	if (inFilename.empty())
 		return false;

@@ -25,6 +25,7 @@ struct IBuildTarget;
 struct IExternalDependency;
 struct IBuildEnvironment;
 struct IDistTarget;
+struct DotEnvFileGenerator;
 
 class BuildState
 {
@@ -67,6 +68,7 @@ public:
 	const CentralState& getCentralState() const;
 	const IBuildTarget* getFirstValidRunTarget(const bool inExecutablesOnly = false) const;
 	const IExternalDependency* getExternalDependencyFromLocation(const std::string& inLocation) const;
+	const DotEnvFileGenerator& getEnvironmentVariables() const;
 
 	AncillaryTools& tools;
 	WorkspaceCache& cache;
@@ -102,6 +104,8 @@ private:
 	void generateUniqueIdForState();
 
 	std::string m_cachePathId;
+
+	mutable std::unique_ptr<DotEnvFileGenerator> m_dotEnv;
 
 	bool m_cacheEnabled = true;
 	bool m_isSubChaletTarget = false;

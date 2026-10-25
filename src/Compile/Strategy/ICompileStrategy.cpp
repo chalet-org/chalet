@@ -79,6 +79,12 @@ bool ICompileStrategy::isXcodeBuild() const noexcept
 }
 
 /*****************************************************************************/
+bool ICompileStrategy::anyFilesUpdated() const noexcept
+{
+	return m_anyFilesUpdated;
+}
+
+/*****************************************************************************/
 bool ICompileStrategy::saveCompileCommands() const
 {
 	auto buildHashChanged = m_state.cache.file().buildHashChanged();

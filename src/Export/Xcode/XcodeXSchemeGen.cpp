@@ -158,7 +158,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		if (isRelease)
 			foundRelease = true;
 
-		auto env = DotEnvFileGenerator::make(*state);
+		const auto& env = state->getEnvironmentVariables();
 		auto& environment = envMap[configName];
 
 		auto path = env.getRunPaths();

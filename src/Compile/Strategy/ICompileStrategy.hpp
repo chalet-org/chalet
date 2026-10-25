@@ -27,6 +27,7 @@ struct ICompileStrategy
 	bool isMSBuild() const noexcept;
 	bool isXcodeBuild() const noexcept;
 
+	bool anyFilesUpdated() const noexcept;
 	bool saveCompileCommands() const;
 
 	void setSourceOutputs(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs);

@@ -837,6 +837,14 @@ bool ChaletJsonFile::readFromSourceTarget(SourceTarget& outTarget, const Json& i
 			else if (isInvalid(status))
 				return false;
 		}
+		else if (value.is_boolean())
+		{
+			bool val = false;
+			if (valueMatchesSearchKeyPattern(val, value, key, "generateRenderDocCaptureSettings", status))
+				outTarget.setGenerateRenderDocCaptureSettings(val);
+			else if (isInvalid(status))
+				return false;
+		}
 	}
 
 	if (!readFromRunTargetProperties(outTarget, inNode))

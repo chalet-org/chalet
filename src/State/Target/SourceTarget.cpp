@@ -1325,6 +1325,7 @@ void SourceTarget::setWindowsOutputDef(const bool inValue) noexcept
 	m_windowsOutputDef = inValue;
 }
 
+/*****************************************************************************/
 bool SourceTarget::justMyCodeDebugging() const noexcept
 {
 	return m_justMyCodeDebugging;
@@ -1332,6 +1333,16 @@ bool SourceTarget::justMyCodeDebugging() const noexcept
 void SourceTarget::setJustMyCodeDebugging(const bool inValue) noexcept
 {
 	m_justMyCodeDebugging = inValue;
+}
+
+/*****************************************************************************/
+bool SourceTarget::generateRenderDocCaptureSettings() const noexcept
+{
+	return m_generateRenderDocCaptureSettings;
+}
+void SourceTarget::setGenerateRenderDocCaptureSettings(const bool inValue) noexcept
+{
+	m_generateRenderDocCaptureSettings = inValue;
 }
 
 /*****************************************************************************/

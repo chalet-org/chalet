@@ -439,6 +439,17 @@ const IExternalDependency* BuildState::getExternalDependencyFromLocation(const s
 }
 
 /*****************************************************************************/
+const DotEnvFileGenerator& BuildState::getEnvironmentVariables() const
+{
+	if (!m_dotEnv)
+	{
+		m_dotEnv = DotEnvFileGenerator::make(*this);
+	}
+
+	return *m_dotEnv;
+}
+
+/*****************************************************************************/
 bool BuildState::initializeBuildConfiguration()
 {
 	auto buildConfiguration = inputs.buildConfiguration();
@@ -1285,7 +1296,7 @@ void BuildState::makeCompilerDiagnosticsVariables()
 /*****************************************************************************/
 void BuildState::makeLibraryPathVariables()
 {
-	auto dotEnvGen = DotEnvFileGenerator::make(*this);
+	const auto& dotEnvGen = getEnvironmentVariables();
 
 	auto filename = fmt::format("{}/run.env", paths.buildOutputDir());
 	dotEnvGen.save(filename);

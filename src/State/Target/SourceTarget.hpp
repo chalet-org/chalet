@@ -224,6 +224,9 @@ struct SourceTarget final : public IBuildTarget
 	bool justMyCodeDebugging() const noexcept;
 	void setJustMyCodeDebugging(const bool inValue) noexcept;
 
+	bool generateRenderDocCaptureSettings() const noexcept;
+	void setGenerateRenderDocCaptureSettings(const bool inValue) noexcept;
+
 	StringList getResolvedRunDependenciesList() const;
 	StringList getLinkerDependentFiles() const;
 
@@ -306,5 +309,6 @@ private:
 	bool m_setWindowsPrefixOutputFilename = false;
 	bool m_windowsOutputDef = false;
 	bool m_justMyCodeDebugging = true;
+	bool m_generateRenderDocCaptureSettings = false;
 };
 }

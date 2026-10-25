@@ -261,7 +261,7 @@ ExportRunConfigurationList ExportAdapter::getFullRunConfigs() const
 		const auto& thisArch = state->info.targetArchitectureString();
 		const auto& thisBuildDir = state->paths.buildOutputDir();
 
-		auto env = DotEnvFileGenerator::make(*state);
+		const auto& env = state->getEnvironmentVariables();
 
 		for (auto& arch : m_arches)
 		{

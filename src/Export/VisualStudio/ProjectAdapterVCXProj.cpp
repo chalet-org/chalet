@@ -891,7 +891,7 @@ const std::string& ProjectAdapterVCXProj::getLocalDebuggerWorkingDirectory() con
 }
 std::string ProjectAdapterVCXProj::getLocalDebuggerEnvironment() const
 {
-	auto gen = DotEnvFileGenerator::make(m_state);
+	const auto& gen = m_state.getEnvironmentVariables();
 	auto path = gen.getRunPaths();
 	auto ret = fmt::format("Path={};%Path%", path);
 

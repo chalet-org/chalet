@@ -13,7 +13,7 @@ struct DotEnvFileGenerator
 {
 	DotEnvFileGenerator() = default;
 
-	static DotEnvFileGenerator make(const BuildState& inState);
+	static std::unique_ptr<DotEnvFileGenerator> make(const BuildState& inState);
 
 	void set(const std::string& inKey, const std::string& inValue);
 	void setRunPaths(const std::string& inValue);
@@ -24,7 +24,9 @@ struct DotEnvFileGenerator
 	std::string getLibraryPath() const;
 	std::string getFrameworkPath() const;
 
-	bool save(const std::string& inFilename);
+	const Dictionary<std::string>& variables() const noexcept;
+
+	bool save(const std::string& inFilename) const;
 
 private:
 	Dictionary<std::string> m_variables;

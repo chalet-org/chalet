@@ -12,6 +12,7 @@
 #include "Builder/ConfigureFileParser.hpp"
 #include "Builder/MesonBuilder.hpp"
 #include "Builder/ProfilerRunner.hpp"
+#include "Builder/RenderDocCaptureSettingsGen.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
 #include "Bundler/BinaryDependency/BinaryDependencyMap.hpp"
@@ -984,6 +985,13 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 
 		StringList fileCache;
 		if (!m_asmDumper->dumpProject(inProject, fileCache))
+			return false;
+	}
+
+	if (inProject.isExecutable() && inProject.generateRenderDocCaptureSettings() && m_strategy->anyFilesUpdated())
+	{
+		RenderDocCaptureSettingsGen renderdocSettings(m_state, inProject);
+		if (!renderdocSettings.generate())
 			return false;
 	}
 

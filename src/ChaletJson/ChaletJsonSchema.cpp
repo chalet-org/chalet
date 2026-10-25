@@ -721,6 +721,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson);
 
+	defs[Defs::TargetSourceGenerateRenderDocCaptureSettings] = R"json({
+		"type": "boolean",
+		"description": "true to generate a capture settings file (*.cap) for running the application through RenderDoc. false to disable (default).\n\nThis would only be applicable if the executable application uses a rendering API supported by RenderDoc like OpenGL, Vulkan, Direct3D, etc.",
+		"default": false
+	})json"_ojson;
+
 	//
 	// workspace metadata / root
 	//
@@ -2041,6 +2047,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addKind(defs[Defs::TargetSourceExecutable], defs, Defs::TargetKind, "executable");
 		addPropertyAndPattern(defs[Defs::TargetSourceExecutable], "defaultRunArguments", Defs::TargetDefaultRunArguments, kPatternConditions);
 		addPropertyAndPattern(defs[Defs::TargetSourceExecutable], "copyFilesOnRun", Defs::TargetSourceCopyFilesOnRun, kPatternConditions);
+		addPropertyAndPattern(defs[Defs::TargetSourceExecutable], "generateRenderDocCaptureSettings", Defs::TargetSourceGenerateRenderDocCaptureSettings, kPatternConditions);
 		addPropertyAndPattern(defs[Defs::TargetSourceExecutable], "runWorkingDirectory", Defs::TargetRunWorkingDirectory, kPatternConditions);
 	}
 
@@ -2329,6 +2336,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetCondition: return "target-condition";
 		case Defs::TargetDefaultRunArguments: return "target-defaultRunArguments";
 		case Defs::TargetSourceCopyFilesOnRun: return "target-copyFilesOnRun";
+		case Defs::TargetSourceGenerateRenderDocCaptureSettings: return "target-generateRenderDocCaptureSettings";
 		case Defs::TargetRunWorkingDirectory: return "target-runWorkingDirectory";
 		//
 		case Defs::TargetSourceExtends: return "target-source-extends";
