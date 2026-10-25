@@ -42,8 +42,7 @@ bool RenderDocCaptureSettingsGen::generate()
 	Path::toWindows(executablePath);
 #endif
 
-	JsonFile jsonFile;
-	auto& root = jsonFile.root = Json::object();
+	Json root = Json::object();
 	root["rdocCaptureSettings"] = 1;
 	auto& jSettings = root["settings"] = Json::object();
 	jSettings["autoStart"] = false;
@@ -52,10 +51,11 @@ bool RenderDocCaptureSettingsGen::generate()
 	jSettings["executable"] = std::move(executablePath);
 	jSettings["inject"] = false;
 	jSettings["numQueuedFrames"] = 0;
-	auto& jOptions = jSettings["options"] = Json::object();
+	jSettings["options"] = Json::object();
 	jSettings["queuedFrameCap"] = 0;
 	jSettings["workingDir"] = m_state.inputs.workingDirectory();
 
+	auto& jOptions = jSettings["options"];
 	jOptions["allowFullscreen"] = true;
 	jOptions["allowVSync"] = true;
 	jOptions["apiValidation"] = false;
@@ -69,7 +69,7 @@ bool RenderDocCaptureSettingsGen::generate()
 	jOptions["softMemoryLimit"] = 0;
 	jOptions["verifyBufferAccess"] = false;
 
-	if (!jsonFile.saveAs(outputFilePath))
+	if (!JsonFile::saveToFile(root, outputFilePath))
 	{
 		Diagnostic::error("RenderDoc capture settings failed to save for: {}", m_project.name());
 		return false;
@@ -81,14 +81,12 @@ bool RenderDocCaptureSettingsGen::generate()
 /*****************************************************************************/
 Json RenderDocCaptureSettingsGen::getEnvironmentAsJson() const
 {
-	Json res = Json::array();
+	Json result = Json::array();
 
 	const auto& env = m_state.getEnvironmentVariables();
 
 	{
-		res.push_back(Json::object());
-
-		auto& jPath = res.back();
+		auto& jPath = result.emplace_back(Json::object());
 		jPath["separator"] = "Platform style";
 		jPath["type"] = "Prepend";
 		jPath["value"] = env.getRunPaths();
@@ -101,16 +99,14 @@ Json RenderDocCaptureSettingsGen::getEnvironmentAsJson() const
 		if (String::startsWith("__", key) || String::equals("PATH", key))
 			continue;
 
-		res.push_back(Json::object());
-
-		auto& jPath = res.back();
+		auto& jPath = result.emplace_back(Json::object());
 		jPath["separator"] = "Platform style";
 		jPath["type"] = "Set";
 		jPath["value"] = value;
 		jPath["variable"] = key;
 	}
 
-	return res;
+	return result;
 }
 
 /*****************************************************************************/
