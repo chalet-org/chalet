@@ -41,22 +41,6 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 	bool result = true;
 	m_failure = false;
 
-	auto onReplaceContents = [this](std::string& fileContents) {
-		auto onReplace = [this](std::string match) {
-			return this->getReplaceValue(std::move(match));
-		};
-		RegexPatterns::matchAndReplaceConfigureFileVariables(fileContents, onReplace);
-
-		BuildState::VariableOptions options;
-		options.checkHome = false;
-		options.onFail = onReplace;
-		m_state.replaceVariablesInString(fileContents, &m_project, options);
-		replaceEmbeddable(fileContents, m_embedFileCache);
-
-		if (fileContents.back() != '\n')
-			fileContents += '\n';
-	};
-
 	auto& sources = m_state.cache.file().sources();
 	const auto& configureFiles = m_project.configureFiles();
 
@@ -98,6 +82,22 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 	if (!Files::pathExists(inOutputFolder))
 		Files::makeDirectory(inOutputFolder);
 
+	auto onReplaceContents = [this](std::string& fileContents) {
+		auto onReplace = [this](std::string match) {
+			return this->getReplaceValue(std::move(match));
+		};
+		RegexPatterns::matchAndReplaceConfigureFileVariables(fileContents, onReplace);
+
+		BuildState::VariableOptions options;
+		options.checkHome = false;
+		options.onFail = onReplace;
+		m_state.replaceVariablesInString(fileContents, &m_project, options);
+		replaceEmbeddable(fileContents, m_embedFileCache);
+
+		if (fileContents.back() != '\n')
+			fileContents += '\n';
+	};
+
 	bool failure = false;
 	for (const auto& configureFile : configureFiles)
 	{
@@ -114,7 +114,6 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 			result = false;
 			continue;
 		}
-
 		auto outFile = String::getPathFilename(configureFile);
 		outFile = outFile.substr(0, outFile.size() - 3);
 
@@ -142,6 +141,7 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 				continue;
 			}
 
+			List::addIfDoesNotExist(m_headerFilesUpdated, outPath);
 			embeddedFileCache[configureFile] = m_embedFileCache;
 			m_embedFileCache.clear();
 
@@ -171,6 +171,12 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 	// LOG("completed in:", timer.asString());
 
 	return result;
+}
+
+/*****************************************************************************/
+const StringList& ConfigureFileParser::headerFilesUpdated() const noexcept
+{
+	return m_headerFilesUpdated;
 }
 
 /*****************************************************************************/

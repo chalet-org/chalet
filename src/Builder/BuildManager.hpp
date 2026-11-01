@@ -83,13 +83,6 @@ private:
 
 	std::vector<IBuildTarget*> m_buildTargets;
 
-	struct ConfigureFileJob
-	{
-		const SourceTarget* target = nullptr;
-		std::string outputFolder;
-	};
-	mutable std::vector<ConfigureFileJob> m_genConfigureFiles;
-
 	Dictionary<StringList> m_fileCache;
 
 	Unique<ICompileStrategy> m_strategy;

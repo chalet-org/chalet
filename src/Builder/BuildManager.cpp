@@ -123,7 +123,6 @@ const IBuildTarget* BuildManager::getRunTarget(const CommandRoute& inRoute)
 /*****************************************************************************/
 bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 {
-	m_genConfigureFiles.clear();
 	m_timer.restart();
 
 	m_strategy = ICompileStrategy::make(m_state.toolchain.strategy(), m_state);
@@ -180,10 +179,10 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	if (!runRoute)
 	{
-		if (m_state.toolchain.strategy() == StrategyType::Native)
-		{
-			Diagnostic::infoEllipsis("Resolving source file dependencies");
-		}
+		// if (m_state.toolchain.strategy() == StrategyType::Native)
+		// {
+		// 	Diagnostic::infoEllipsis("Resolving source file dependencies");
+		// }
 
 		if (m_state.info.dumpAssembly())
 		{
@@ -192,12 +191,12 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 				return false;
 		}
 
-		// Note: We must iterate over all targets so compile_command.json gets generated correctly
 		for (auto& target : m_state.targets)
 		{
 			if (target->isSources())
 			{
-				if (!addProjectToBuild(static_cast<const SourceTarget&>(*target)))
+				// Note: We must iterate over all targets so compile_command.json gets generated correctly
+				if (!m_strategy->addCompileCommands(static_cast<const SourceTarget&>(*target)))
 					return false;
 			}
 			else if (inRoute.isRebuild())
@@ -222,7 +221,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 		if (m_state.toolchain.strategy() == StrategyType::Native)
 		{
-			Diagnostic::printDone(m_timer.asString());
+			// 	Diagnostic::printDone(m_timer.asString());
 			m_timer.restart();
 		}
 
@@ -484,11 +483,6 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 			Diagnostic::error("Error creating paths for project: {}", inProject.name());
 			return false;
 		}
-
-		if (!inProject.configureFiles().empty())
-		{
-			m_genConfigureFiles.emplace_back(ConfigureFileJob{ &inProject, m_state.paths.intermediateIncludeDir(inProject) });
-		}
 	}
 
 	if (!buildToolchain->initialize(m_state))
@@ -512,14 +506,13 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 /*****************************************************************************/
 bool BuildManager::generateConfigureFilesForSourceTarget(const SourceTarget& inProject) const
 {
-	for (auto& job : m_genConfigureFiles)
+	if (inProject.willBuild())
 	{
-		if (&inProject == job.target)
+		if (!inProject.configureFiles().empty())
 		{
-			if (!runConfigureFileParser(inProject, job.outputFolder))
+			auto outputFolder = m_state.paths.intermediateIncludeDir(inProject);
+			if (!runConfigureFileParser(inProject, outputFolder))
 				return false;
-
-			break;
 		}
 	}
 
@@ -988,6 +981,9 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 	if (!generateConfigureFilesForSourceTarget(inProject))
 		return false;
 
+	if (!addProjectToBuild(inProject))
+		return false;
+
 	if (inProject.cppModules())
 	{
 		if (!m_strategy->buildProjectModules(inProject))
@@ -1026,6 +1022,9 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 	displayHeader("Rebuild", inProject, Output::theme().header, outputFile);
 
 	if (!generateConfigureFilesForSourceTarget(inProject))
+		return false;
+
+	if (!addProjectToBuild(inProject))
 		return false;
 
 	if (inProject.cppModules())

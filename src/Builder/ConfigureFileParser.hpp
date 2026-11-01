@@ -17,6 +17,8 @@ struct ConfigureFileParser
 
 	bool run(const std::string& inOutputFolder);
 
+	const StringList& headerFilesUpdated() const noexcept;
+
 private:
 	std::string getReplaceValue(std::string inKey) const;
 	std::string getReplaceValueFromSubString(const std::string& inKey, const bool isTarget = false) const;
@@ -28,6 +30,7 @@ private:
 	const SourceTarget& m_project;
 
 	StringList m_embedFileCache;
+	StringList m_headerFilesUpdated;
 	std::string m_cacheFile;
 
 	bool m_failure = false;

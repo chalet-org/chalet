@@ -148,9 +148,6 @@ bool ICompileStrategy::doPostBuild() const
 /*****************************************************************************/
 bool ICompileStrategy::addProject(const SourceTarget& inProject)
 {
-	if (!addCompileCommands(inProject))
-		return false;
-
 	auto& outputs = m_outputs.at(inProject.name());
 	outputs.reset();
 

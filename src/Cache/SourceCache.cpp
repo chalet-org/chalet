@@ -18,8 +18,7 @@ namespace chalet
 SourceCache::SourceCache(const std::time_t inLastBuildTime) :
 	m_initializedTime(inLastBuildTime),
 	m_lastBuildTime(inLastBuildTime)
-{
-}
+{}
 
 /*****************************************************************************/
 bool SourceCache::dirty() const

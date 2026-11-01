@@ -42,6 +42,7 @@ struct ICompileStrategy
 	virtual bool buildProject(const SourceTarget& inProject);
 	virtual bool doPostBuild() const;
 
+	bool addCompileCommands(const SourceTarget& inProject);
 	bool buildProjectModules(const SourceTarget& inProject);
 
 protected:
@@ -60,7 +61,6 @@ protected:
 	bool m_anyFilesUpdated = false;
 
 private:
-	bool addCompileCommands(const SourceTarget& inProject);
 #if defined(CHALET_MACOS)
 	bool generateDebugSymbolFiles(const SourceTarget& inProject) const;
 
