@@ -198,6 +198,12 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 				// Note: We must iterate over all targets so compile_command.json gets generated correctly
 				if (!m_strategy->addCompileCommands(static_cast<const SourceTarget&>(*target)))
 					return false;
+
+				if (m_state.toolchain.strategy() != StrategyType::Native)
+				{
+					if (!addProjectToBuild(static_cast<const SourceTarget&>(*target)))
+						return false;
+				}
 			}
 			else if (inRoute.isRebuild())
 			{
@@ -471,6 +477,9 @@ void BuildManager::printBuildInformation() const
 /*****************************************************************************/
 bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 {
+	if (!generateConfigureFilesForSourceTarget(inProject))
+		return false;
+
 	auto buildToolchain = std::make_unique<CompileToolchain>(inProject);
 	auto& fileCache = m_fileCache[inProject.buildSuffix()];
 	auto outputs = m_state.paths.getOutputs(inProject, fileCache);
@@ -978,11 +987,11 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 
 	displayHeader("Build", inProject, Output::theme().header, outputFile);
 
-	if (!generateConfigureFilesForSourceTarget(inProject))
-		return false;
-
-	if (!addProjectToBuild(inProject))
-		return false;
+	if (m_state.toolchain.strategy() == StrategyType::Native)
+	{
+		if (!addProjectToBuild(inProject))
+			return false;
+	}
 
 	if (inProject.cppModules())
 	{
@@ -1021,11 +1030,11 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 
 	displayHeader("Rebuild", inProject, Output::theme().header, outputFile);
 
-	if (!generateConfigureFilesForSourceTarget(inProject))
-		return false;
-
-	if (!addProjectToBuild(inProject))
-		return false;
+	if (m_state.toolchain.strategy() == StrategyType::Native)
+	{
+		if (!addProjectToBuild(inProject))
+			return false;
+	}
 
 	if (inProject.cppModules())
 	{
