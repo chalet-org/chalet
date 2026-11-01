@@ -55,6 +55,7 @@ private:
 	bool onFinishBuild(const SourceTarget& inProject) const;
 
 	bool checkIntermediateFiles() const;
+	bool generateConfigureFilesForSourceTarget(const SourceTarget& inProject) const;
 
 	// commands
 	bool cmdClean();
@@ -81,6 +82,13 @@ private:
 	BuildRouteList m_buildRoutes;
 
 	std::vector<IBuildTarget*> m_buildTargets;
+
+	struct ConfigureFileJob
+	{
+		const SourceTarget* target = nullptr;
+		std::string outputFolder;
+	};
+	mutable std::vector<ConfigureFileJob> m_genConfigureFiles;
 
 	Dictionary<StringList> m_fileCache;
 

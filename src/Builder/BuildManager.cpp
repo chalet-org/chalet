@@ -123,6 +123,7 @@ const IBuildTarget* BuildManager::getRunTarget(const CommandRoute& inRoute)
 /*****************************************************************************/
 bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 {
+	m_genConfigureFiles.clear();
 	m_timer.restart();
 
 	m_strategy = ICompileStrategy::make(m_state.toolchain.strategy(), m_state);
@@ -486,8 +487,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 
 		if (!inProject.configureFiles().empty())
 		{
-			if (!runConfigureFileParser(inProject, m_state.paths.intermediateIncludeDir(inProject)))
-				return false;
+			m_genConfigureFiles.emplace_back(ConfigureFileJob{ &inProject, m_state.paths.intermediateIncludeDir(inProject) });
 		}
 	}
 
@@ -504,6 +504,23 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 	{
 		if (!m_strategy->addProject(inProject))
 			return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildManager::generateConfigureFilesForSourceTarget(const SourceTarget& inProject) const
+{
+	for (auto& job : m_genConfigureFiles)
+	{
+		if (&inProject == job.target)
+		{
+			if (!runConfigureFileParser(inProject, job.outputFolder))
+				return false;
+
+			break;
+		}
 	}
 
 	return true;
@@ -685,10 +702,10 @@ bool BuildManager::checkIntermediateFiles() const
 		{
 			auto outFolder = m_state.paths.intermediateDir(project);
 			// #if defined(CHALET_MACOS)
-			// 			if (m_strategy->isXcodeBuild())
-			// 			{
-			// 				outFolder = fmt::format("{}/obj.{}", m_state.paths.buildOutputDir(), project.name());
-			// 			}
+			// 		if (m_strategy->isXcodeBuild())
+			// 		{
+			//			outFolder = fmt::format("{}/obj.{}", m_state.paths.buildOutputDir(), project.name());
+			// 		}
 			// #endif
 			runConfigureFileParser(project, outFolder); // ignore the result
 		}
@@ -968,6 +985,9 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 
 	displayHeader("Build", inProject, Output::theme().header, outputFile);
 
+	if (!generateConfigureFilesForSourceTarget(inProject))
+		return false;
+
 	if (inProject.cppModules())
 	{
 		if (!m_strategy->buildProjectModules(inProject))
@@ -1004,6 +1024,9 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 	const auto& outputFile = inProject.outputFile();
 
 	displayHeader("Rebuild", inProject, Output::theme().header, outputFile);
+
+	if (!generateConfigureFilesForSourceTarget(inProject))
+		return false;
 
 	if (inProject.cppModules())
 	{

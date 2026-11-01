@@ -183,13 +183,9 @@ std::string Files::getPlatformFrameworkExtension()
 i64 Files::getLastWriteTime(const std::string& inFile)
 {
 	if (::stat(inFile.c_str(), &statBuffer) == 0)
-	{
 		return statBuffer.st_mtime;
-	}
 	else
-	{
 		return 0;
-	}
 }
 
 /*****************************************************************************/
