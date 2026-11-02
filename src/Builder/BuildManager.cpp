@@ -179,10 +179,10 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	if (!runRoute)
 	{
-		// if (m_state.toolchain.strategy() == StrategyType::Native)
-		// {
-		// 	Diagnostic::infoEllipsis("Resolving source file dependencies");
-		// }
+		if (m_state.toolchain.strategy() == StrategyType::Native)
+		{
+			Diagnostic::infoEllipsis("Resolving source file dependencies");
+		}
 
 		if (m_state.info.dumpAssembly())
 		{
@@ -227,7 +227,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 		if (m_state.toolchain.strategy() == StrategyType::Native)
 		{
-			// 	Diagnostic::printDone(m_timer.asString());
+			Diagnostic::printDone(m_timer.asString());
 			m_timer.restart();
 		}
 
