@@ -199,7 +199,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 				if (!m_strategy->addCompileCommands(static_cast<const SourceTarget&>(*target)))
 					return false;
 
-				if (m_state.toolchain.strategy() != StrategyType::Native)
+				// if (m_state.toolchain.strategy() != StrategyType::Native)
 				{
 					if (!addProjectToBuild(static_cast<const SourceTarget&>(*target)))
 						return false;
@@ -987,11 +987,11 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 
 	displayHeader("Build", inProject, Output::theme().header, outputFile);
 
-	if (m_state.toolchain.strategy() == StrategyType::Native)
-	{
-		if (!addProjectToBuild(inProject))
-			return false;
-	}
+	// if (m_state.toolchain.strategy() == StrategyType::Native)
+	// {
+	// 	if (!addProjectToBuild(inProject))
+	// 		return false;
+	// }
 
 	if (inProject.cppModules())
 	{
@@ -1030,11 +1030,11 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 
 	displayHeader("Rebuild", inProject, Output::theme().header, outputFile);
 
-	if (m_state.toolchain.strategy() == StrategyType::Native)
-	{
-		if (!addProjectToBuild(inProject))
-			return false;
-	}
+	// if (m_state.toolchain.strategy() == StrategyType::Native)
+	// {
+	// 	if (!addProjectToBuild(inProject))
+	// 		return false;
+	// }
 
 	if (inProject.cppModules())
 	{
