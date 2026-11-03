@@ -314,6 +314,8 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 					if (List::addIfDoesNotExist(outList, dependencyName))
 						dependenciesAdded = true;
 				}
+
+				List::addIfDoesNotExist(outList, targetName);
 			}
 		}
 	}
