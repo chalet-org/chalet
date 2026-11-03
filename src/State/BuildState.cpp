@@ -231,95 +231,90 @@ const CentralState& BuildState::getCentralState() const
 //
 void BuildState::getTargetDependencies(StringList& outList, const std::string& inTargetName, const bool inWithSelf) const
 {
-	StringList dependsOn;
+	Timer timer;
 	const auto& buildDir = paths.buildOutputDir();
+	auto cwd = Path::getWithSeparatorSuffix(inputs.workingDirectory());
+
+	auto processPath = [](StringList& list, const std::string& inPath) {
+		List::addIfDoesNotExist(list, String::getPathBaseName(inPath));
+	};
+
+	auto processDependsOn = [&buildDir, &cwd](StringList& list, const StringList& inDependsOn) {
+		for (auto& dep : inDependsOn)
+		{
+			auto path = dep;
+			String::replaceAll(path, cwd, "");
+
+			if (String::startsWith(buildDir, path))
+				List::addIfDoesNotExist(list, String::getPathBaseName(path));
+		}
+	};
+
+	StringList checkTargets;
+	Dictionary<StringList> dependencyMap;
 	for (auto& target : targets)
 	{
-		if (target->isProcess())
+		const auto& targetName = target->name();
+		const bool isTarget = String::equals(inTargetName, targetName);
+		const bool isSources = target->isSources();
+		if (isSources)
+		{
+			auto& project = static_cast<const SourceTarget&>(*target);
+			processDependsOn(checkTargets, project.dependsOn());
+
+			auto& dependencies = dependencyMap[targetName];
+			for (auto& link : project.projectSharedLinks())
+				processPath(dependencies, link);
+
+			for (auto& link : project.projectStaticLinks())
+				processPath(dependencies, link);
+		}
+		else if (target->isProcess())
 		{
 			auto& process = static_cast<const ProcessBuildTarget&>(*target);
-			auto& depends = process.dependsOn();
-			for (auto& dep : depends)
-			{
-				if (String::startsWith(buildDir, dep))
-				{
-					List::addIfDoesNotExist(dependsOn, dep.substr(buildDir.size() + 1));
-				}
-			}
+			processDependsOn(checkTargets, process.dependsOn());
+			processPath(checkTargets, process.path());
 		}
 		else if (target->isScript())
 		{
-			auto& process = static_cast<const ScriptBuildTarget&>(*target);
-			auto& depends = process.dependsOn();
-			for (auto& dep : depends)
-			{
-				if (String::startsWith(buildDir, dep))
-				{
-					List::addIfDoesNotExist(dependsOn, dep.substr(buildDir.size() + 1));
-				}
-			}
+			auto& script = static_cast<const ScriptBuildTarget&>(*target);
+			processDependsOn(checkTargets, script.dependsOn());
+		}
+		else if (target->isCMake())
+		{
+			auto& project = static_cast<const CMakeTarget&>(*target);
+			processPath(checkTargets, project.runExecutable());
+		}
+		else if (target->isMeson())
+		{
+			auto& project = static_cast<const MesonTarget&>(*target);
+			processPath(checkTargets, project.runExecutable());
 		}
 
-		bool isSources = target->isSources();
-		bool isTarget = String::equals(inTargetName, target->name());
+		if ((!isTarget && !isSources) || isTarget)
+		{
+			List::addIfDoesNotExist(checkTargets, targetName);
+		}
+
 		if (isTarget)
-		{
-			if (isSources)
-			{
-				auto& project = static_cast<const SourceTarget&>(*target);
-				for (auto& link : project.projectSharedLinks())
-				{
-					if (List::addIfDoesNotExist(outList, link))
-						getTargetDependencies(outList, link, true);
-				}
-
-				for (auto& link : project.projectStaticLinks())
-				{
-					if (List::addIfDoesNotExist(outList, link))
-						getTargetDependencies(outList, link, true);
-				}
-			}
-
 			break;
-		}
-
-		if (!isSources && !inWithSelf)
-		{
-			List::addIfDoesNotExist(outList, target->name());
-		}
 	}
 
-	if (!dependsOn.empty())
+	bool dependenciesAdded = !checkTargets.empty();
+	while (dependenciesAdded)
 	{
-		for (auto& target : targets)
+		dependenciesAdded = false;
+		for (auto& targetName : checkTargets)
 		{
-			if (target->isSources())
+			if (dependencyMap.find(targetName) != dependencyMap.end())
 			{
-				auto& project = static_cast<const SourceTarget&>(*target);
-				if (String::contains(dependsOn, project.outputFile()))
-					outList.emplace_back(target->name());
-			}
-			else if (target->isCMake())
-			{
-				auto& project = static_cast<const CMakeTarget&>(*target);
-				for (auto& depends : dependsOn)
+				auto& dependencies = dependencyMap.at(targetName);
+				for (auto& dependencyName : dependencies)
 				{
-					if (String::endsWith(project.runExecutable(), depends))
-						outList.emplace_back(target->name());
+					if (List::addIfDoesNotExist(outList, dependencyName))
+						dependenciesAdded = true;
 				}
 			}
-			else if (target->isMeson())
-			{
-				auto& project = static_cast<const MesonTarget&>(*target);
-				for (auto& depends : dependsOn)
-				{
-					if (String::endsWith(project.runExecutable(), depends))
-						outList.emplace_back(target->name());
-				}
-			}
-
-			if (String::equals(inTargetName, target->name()))
-				break;
 		}
 	}
 
