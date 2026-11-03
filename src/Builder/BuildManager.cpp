@@ -195,10 +195,6 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		{
 			if (target->isSources())
 			{
-				// Note: We must iterate over all targets so compile_command.json gets generated correctly
-				if (!m_strategy->addCompileCommands(static_cast<const SourceTarget&>(*target)))
-					return false;
-
 				// if (m_state.toolchain.strategy() != StrategyType::Native)
 				{
 					if (!addProjectToBuild(static_cast<const SourceTarget&>(*target)))
@@ -505,6 +501,10 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 
 	if (!inProject.cppModules())
 	{
+		// Note: We must iterate over all targets so compile_command.json gets generated correctly
+		if (!m_strategy->addCompileCommands(inProject))
+			return false;
+
 		if (!m_strategy->addProject(inProject))
 			return false;
 	}
