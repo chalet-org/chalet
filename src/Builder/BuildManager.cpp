@@ -179,10 +179,10 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	if (!runRoute)
 	{
-		if (m_state.toolchain.strategy() == StrategyType::Native)
-		{
-			Diagnostic::infoEllipsis("Resolving source file dependencies");
-		}
+		// if (m_state.toolchain.strategy() == StrategyType::Native)
+		// {
+		// 	Diagnostic::infoEllipsis("Resolving source file dependencies");
+		// }
 
 		if (m_state.info.dumpAssembly())
 		{
@@ -195,7 +195,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		{
 			if (target->isSources())
 			{
-				// if (m_state.toolchain.strategy() != StrategyType::Native)
+				if (m_state.toolchain.strategy() != StrategyType::Native)
 				{
 					if (!addProjectToBuild(static_cast<const SourceTarget&>(*target)))
 						return false;
@@ -223,7 +223,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 		if (m_state.toolchain.strategy() == StrategyType::Native)
 		{
-			Diagnostic::printDone(m_timer.asString());
+			// Diagnostic::printDone(m_timer.asString());
 			m_timer.restart();
 		}
 
@@ -987,11 +987,11 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 
 	displayHeader("Build", inProject, Output::theme().header, outputFile);
 
-	// if (m_state.toolchain.strategy() == StrategyType::Native)
-	// {
-	// 	if (!addProjectToBuild(inProject))
-	// 		return false;
-	// }
+	if (m_state.toolchain.strategy() == StrategyType::Native)
+	{
+		if (!addProjectToBuild(inProject))
+			return false;
+	}
 
 	if (inProject.cppModules())
 	{
@@ -1030,11 +1030,11 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 
 	displayHeader("Rebuild", inProject, Output::theme().header, outputFile);
 
-	// if (m_state.toolchain.strategy() == StrategyType::Native)
-	// {
-	// 	if (!addProjectToBuild(inProject))
-	// 		return false;
-	// }
+	if (m_state.toolchain.strategy() == StrategyType::Native)
+	{
+		if (!addProjectToBuild(inProject))
+			return false;
+	}
 
 	if (inProject.cppModules())
 	{
