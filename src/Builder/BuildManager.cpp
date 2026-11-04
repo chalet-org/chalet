@@ -871,7 +871,7 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 	if (inRunCommand || canProcessRun(sourceCache, hash, inTarget.dependsOn()))
 	{
 		auto cwd = inTarget.workingDirectory();
-		result = runProcess(cmd, path, cwd, inRunCommand);
+		result = runProcess(cmd, path, cwd, inRunCommand, true);
 		sourceCache.addDataCache(hash, result);
 
 		if (!inRunCommand && result)
@@ -1201,7 +1201,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	}
 	else
 	{
-		return runProcess(cmd, outputFile, cwd, true);
+		return runProcess(cmd, outputFile, cwd, true, false);
 	}
 }
 
@@ -1222,13 +1222,13 @@ bool BuildManager::canProcessRun(SourceCache& inSourceCache, const std::string& 
 }
 
 /*****************************************************************************/
-bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, const std::string& inCwd, const bool inRunCommand)
+bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, const std::string& inCwd, const bool inRunCommand, const bool inProcessTarget)
 {
 	if (inRunCommand)
 	{
 		Output::printSeparator();
 
-		if (m_state.environment->isEmscripten())
+		if (!inProcessTarget && m_state.environment->isEmscripten())
 		{
 			auto cancelCmd = "CTRL+C";
 			Output::print(Output::theme().flair, fmt::format("(Press {} to exit the server)", cancelCmd));
