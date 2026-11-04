@@ -70,6 +70,8 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 					{
 						if (embeddedFileCache.find(name) == embeddedFileCache.end())
 							embeddedFileCache.emplace(name, StringList{});
+
+						embeddedFileCache[name].emplace_back(std::move(value));
 					}
 				}
 			}
@@ -147,15 +149,13 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 
 			if (m_failure)
 			{
+				Files::removeIfExists(outPath);
 				Diagnostic::error("There was a problem parsing the file: {}", configureFile);
 				failure |= m_failure;
 				m_failure = false;
 			}
 		}
 	}
-
-	if (failure)
-		return false;
 
 	if (!embeddedFileCache.empty())
 	{
@@ -167,6 +167,9 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 		jsonFile.setDirty(true);
 		jsonFile.save();
 	}
+
+	if (failure)
+		return false;
 
 	// LOG("completed in:", timer.asString());
 
