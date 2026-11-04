@@ -59,7 +59,8 @@ struct BuildPaths
 	std::string getBuildOutputPath(std::string inPath) const;
 
 	void setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject);
-	Unique<SourceOutputs> getOutputs(const SourceTarget& inProject, StringList& outFileCache);
+	Ref<SourceOutputs> getOutputs(const SourceTarget& inProject, StringList& outFileCache);
+	void clearSourceOutputCache();
 
 	SourceType getSourceType(const std::string& inSource) const;
 
@@ -89,6 +90,8 @@ private:
 	StringList getDirectoryList(const SourceTarget& inProject) const;
 
 	const BuildState& m_state;
+
+	std::unordered_map<std::string, Ref<SourceOutputs>> m_sourceOutputCache;
 
 	const StringList m_resourceExts;
 	const StringList m_objectiveCExts;

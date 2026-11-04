@@ -241,72 +241,88 @@ void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inPro
 }
 
 /*****************************************************************************/
-Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, StringList& outFileCache)
+Ref<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, StringList& outFileCache)
 {
-	auto ret = std::make_unique<SourceOutputs>();
-
 	setBuildDirectoriesBasedOnProjectKind(inProject);
 
-	auto files = getFiles(inProject);
-	SourceGroup directories = getDirectories(inProject);
-
-	// inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache
-
-	const bool isNotMsvc = !m_state.environment->isMsvc();
-	const bool dumpAssembly = m_state.info.dumpAssembly();
-
-	ret->objectListLinker = getObjectFilesList(files->list, inProject);
-	files->list = String::excludeIf(outFileCache, files->list);
-	ret->groups = getSourceFileGroupList(*files, inProject, outFileCache);
-
-	StringList objSubDirs = getOutputDirectoryList(directories, objDir());
-	// StringList depSubDirs = getOutputDirectoryList(directories, depDir());
-	StringList depSubDirs;
-
-	StringList asmSubDirs;
-	if (dumpAssembly)
+	const auto& projectName = inProject.name();
+	if (m_sourceOutputCache.find(projectName) == m_sourceOutputCache.end())
 	{
-		asmSubDirs = getOutputDirectoryList(directories, asmDir());
+		auto ret = std::make_shared<SourceOutputs>();
+
+		auto files = getFiles(inProject);
+		SourceGroup directories = getDirectories(inProject);
+
+		// inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache
+
+		const bool isNotMsvc = !m_state.environment->isMsvc();
+		const bool dumpAssembly = m_state.info.dumpAssembly();
+
+		ret->objectListLinker = getObjectFilesList(files->list, inProject);
+		files->list = String::excludeIf(outFileCache, files->list);
+		ret->groups = getSourceFileGroupList(*files, inProject, outFileCache);
+
+		StringList objSubDirs = getOutputDirectoryList(directories, objDir());
+		// StringList depSubDirs = getOutputDirectoryList(directories, depDir());
+		StringList depSubDirs;
+
+		StringList asmSubDirs;
+		if (dumpAssembly)
+		{
+			asmSubDirs = getOutputDirectoryList(directories, asmDir());
+
+			if (isNotMsvc)
+				ret->directories.reserve(4 + objSubDirs.size() + depSubDirs.size() + asmSubDirs.size());
+			else
+				ret->directories.reserve(4 + objSubDirs.size() + asmSubDirs.size());
+		}
+		else
+		{
+			if (isNotMsvc)
+				ret->directories.reserve(3 + objSubDirs.size() + depSubDirs.size());
+			else
+				ret->directories.reserve(3 + objSubDirs.size());
+		}
+
+		ret->directories.push_back(m_buildOutputDir);
+		ret->directories.push_back(objDir());
+		ret->directories.push_back(intermediateDir(inProject));
+
+		ret->directories.insert(ret->directories.end(), objSubDirs.begin(), objSubDirs.end());
 
 		if (isNotMsvc)
-			ret->directories.reserve(4 + objSubDirs.size() + depSubDirs.size() + asmSubDirs.size());
-		else
-			ret->directories.reserve(4 + objSubDirs.size() + asmSubDirs.size());
+		{
+			ret->directories.push_back(depDir());
+			ret->directories.insert(ret->directories.end(), depSubDirs.begin(), depSubDirs.end());
+		}
+
+		if (dumpAssembly)
+		{
+			ret->directories.push_back(asmDir());
+			ret->directories.insert(ret->directories.end(), asmSubDirs.begin(), asmSubDirs.end());
+		}
+
+		// for (auto& dir : ret->directories)
+		// {
+		// 	LOG(dir);
+		// }
+
+		ret->target = getTargetFilename(inProject);
+
+		m_sourceOutputCache[projectName] = ret;
+
+		return ret;
 	}
 	else
 	{
-		if (isNotMsvc)
-			ret->directories.reserve(3 + objSubDirs.size() + depSubDirs.size());
-		else
-			ret->directories.reserve(3 + objSubDirs.size());
+		return m_sourceOutputCache.at(projectName);
 	}
+}
 
-	ret->directories.push_back(m_buildOutputDir);
-	ret->directories.push_back(objDir());
-	ret->directories.push_back(intermediateDir(inProject));
-
-	ret->directories.insert(ret->directories.end(), objSubDirs.begin(), objSubDirs.end());
-
-	if (isNotMsvc)
-	{
-		ret->directories.push_back(depDir());
-		ret->directories.insert(ret->directories.end(), depSubDirs.begin(), depSubDirs.end());
-	}
-
-	if (dumpAssembly)
-	{
-		ret->directories.push_back(asmDir());
-		ret->directories.insert(ret->directories.end(), asmSubDirs.begin(), asmSubDirs.end());
-	}
-
-	// for (auto& dir : ret->directories)
-	// {
-	// 	LOG(dir);
-	// }
-
-	ret->target = getTargetFilename(inProject);
-
-	return ret;
+/*****************************************************************************/
+void BuildPaths::clearSourceOutputCache()
+{
+	m_sourceOutputCache.clear();
 }
 
 /*****************************************************************************/

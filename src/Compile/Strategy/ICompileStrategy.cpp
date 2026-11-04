@@ -98,7 +98,7 @@ bool ICompileStrategy::saveCompileCommands() const
 }
 
 /*****************************************************************************/
-void ICompileStrategy::setSourceOutputs(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs)
+void ICompileStrategy::setSourceOutputs(const SourceTarget& inProject, Ref<SourceOutputs>&& inOutputs)
 {
 	const auto& name = inProject.name();
 	m_outputs[name] = std::move(inOutputs);
@@ -148,10 +148,11 @@ bool ICompileStrategy::doPostBuild() const
 /*****************************************************************************/
 bool ICompileStrategy::addProject(const SourceTarget& inProject)
 {
-	auto& outputs = m_outputs.at(inProject.name());
+	const auto& projectName = inProject.name();
+	auto& outputs = m_outputs.at(projectName);
 	outputs.reset();
 
-	auto& toolchain = m_toolchains.at(inProject.name());
+	auto& toolchain = m_toolchains.at(projectName);
 	toolchain.reset();
 
 	return true;

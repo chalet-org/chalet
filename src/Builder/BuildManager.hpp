@@ -50,6 +50,7 @@ private:
 	bool doMesonClean(const MesonTarget& inTarget);
 	bool doFullBuildFolderClean(const bool inForRebuild);
 
+	bool prepareProjectToBuild(const SourceTarget& inProject);
 	bool addProjectToBuild(const SourceTarget& inProject);
 
 	bool onFinishBuild(const SourceTarget& inProject) const;

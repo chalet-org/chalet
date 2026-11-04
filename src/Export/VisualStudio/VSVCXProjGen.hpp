@@ -89,7 +89,7 @@ private:
 
 	HeapDictionary<ProjectAdapterVCXProj> m_adapters;
 	HeapDictionary<TargetExportAdapter> m_targetAdapters;
-	HeapDictionary<SourceOutputs> m_outputs;
+	std::unordered_map<std::string, Ref<SourceOutputs>> m_outputs;
 
 	std::string m_currentTarget;
 	std::string m_currentGuid;

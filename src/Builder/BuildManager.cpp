@@ -195,6 +195,9 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		{
 			if (target->isSources())
 			{
+				if (!prepareProjectToBuild(static_cast<const SourceTarget&>(*target)))
+					return false;
+
 				if (m_state.toolchain.strategy() != StrategyType::Native)
 				{
 					if (!addProjectToBuild(static_cast<const SourceTarget&>(*target)))
@@ -471,13 +474,12 @@ void BuildManager::printBuildInformation() const
 }
 
 /*****************************************************************************/
-bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
+bool BuildManager::prepareProjectToBuild(const SourceTarget& inProject)
 {
-	if (!generateConfigureFilesForSourceTarget(inProject))
-		return false;
-
 	auto buildToolchain = std::make_unique<CompileToolchain>(inProject);
 	auto& fileCache = m_fileCache[inProject.buildSuffix()];
+
+	// Note: this sets the build output paths used in a lot of places
 	auto outputs = m_state.paths.getOutputs(inProject, fileCache);
 
 	if (inProject.willBuild())
@@ -504,7 +506,22 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 		// Note: We must iterate over all targets so compile_command.json gets generated correctly
 		if (!m_strategy->addCompileCommands(inProject))
 			return false;
+	}
 
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
+{
+	// Make sure the build paths are updated
+	m_state.paths.setBuildDirectoriesBasedOnProjectKind(inProject);
+
+	if (!generateConfigureFilesForSourceTarget(inProject))
+		return false;
+
+	if (!inProject.cppModules())
+	{
 		if (!m_strategy->addProject(inProject))
 			return false;
 	}

@@ -30,7 +30,7 @@ struct ICompileStrategy
 	bool anyFilesUpdated() const noexcept;
 	bool saveCompileCommands() const;
 
-	void setSourceOutputs(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs);
+	void setSourceOutputs(const SourceTarget& inProject, Ref<SourceOutputs>&& inOutputs);
 	void setToolchainController(const SourceTarget& inProject, Unique<CompileToolchain>&& inToolchain);
 
 	virtual std::string name() const noexcept = 0;
@@ -50,7 +50,7 @@ protected:
 
 	BuildState& m_state;
 
-	Dictionary<Unique<SourceOutputs>> m_outputs;
+	Dictionary<Ref<SourceOutputs>> m_outputs;
 	Dictionary<Unique<CompileToolchain>> m_toolchains;
 
 	Unique<IStrategyGenerator> m_generator;

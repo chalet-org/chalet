@@ -48,7 +48,7 @@ public:
 
 	virtual bool buildProject(const SourceTarget& inProject);
 
-	Unique<SourceOutputs> outputs;
+	Ref<SourceOutputs> outputs;
 	Unique<CompileToolchain> toolchain;
 
 protected:
