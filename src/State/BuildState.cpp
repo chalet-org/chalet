@@ -229,6 +229,23 @@ const CentralState& BuildState::getCentralState() const
 // TODO: Rework this when batch builds are tackled - should get this once per build state,
 //   and as optimized as possible
 //
+namespace
+{
+void updateListFromDependencyMap(StringList& outList, const std::string& targetName, const Dictionary<StringList>& dependencyMap)
+{
+	if (dependencyMap.find(targetName) != dependencyMap.end())
+	{
+		auto& dependencies = dependencyMap.at(targetName);
+		for (auto& dependencyName : dependencies)
+		{
+			if (List::addIfDoesNotExist(outList, dependencyName))
+				updateListFromDependencyMap(outList, dependencyName, dependencyMap);
+		}
+
+		List::addIfDoesNotExist(outList, targetName);
+	}
+}
+}
 void BuildState::getTargetDependencies(StringList& outList, const std::string& inTargetName, const bool inWithSelf) const
 {
 	Timer timer;
@@ -236,6 +253,10 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 	auto cwd = Path::getWithSeparatorSuffix(inputs.workingDirectory());
 
 	auto processPath = [](StringList& list, const std::string& inPath) {
+		if (inPath.empty())
+			return;
+
+		// LOG("--", inPath);
 		List::addIfDoesNotExist(list, String::getPathBaseName(inPath));
 	};
 
@@ -262,12 +283,17 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 			auto& project = static_cast<const SourceTarget&>(*target);
 			processDependsOn(checkTargets, project.dependsOn());
 
-			auto& dependencies = dependencyMap[targetName];
 			for (auto& link : project.projectSharedLinks())
-				processPath(dependencies, link);
+			{
+				// LOG(targetName, link);
+				processPath(dependencyMap[targetName], link);
+			}
 
 			for (auto& link : project.projectStaticLinks())
-				processPath(dependencies, link);
+			{
+				// LOG(targetName, link);
+				processPath(dependencyMap[targetName], link);
+			}
 		}
 		else if (target->isProcess())
 		{
@@ -300,30 +326,25 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 			break;
 	}
 
+	if (inWithSelf)
+	{
+		List::addIfDoesNotExist(checkTargets, inTargetName);
+	}
+
 	bool dependenciesAdded = !checkTargets.empty();
 	while (dependenciesAdded)
 	{
 		dependenciesAdded = false;
 		for (auto& targetName : checkTargets)
 		{
-			if (dependencyMap.find(targetName) != dependencyMap.end())
-			{
-				auto& dependencies = dependencyMap.at(targetName);
-				for (auto& dependencyName : dependencies)
-				{
-					if (List::addIfDoesNotExist(outList, dependencyName))
-						dependenciesAdded = true;
-				}
-
-				List::addIfDoesNotExist(outList, targetName);
-			}
+			updateListFromDependencyMap(outList, targetName, dependencyMap);
 		}
 	}
 
-	if (inWithSelf)
-	{
-		List::addIfDoesNotExist(outList, inTargetName);
-	}
+	// for (auto& target : outList)
+	// {
+	// 	LOG(target);
+	// }
 }
 
 /*****************************************************************************/
