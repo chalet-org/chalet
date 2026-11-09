@@ -244,6 +244,10 @@ void updateListFromDependencyMap(StringList& outList, const std::string& targetN
 
 		List::addIfDoesNotExist(outList, targetName);
 	}
+	else if (dependencyMap.empty())
+	{
+		List::addIfDoesNotExist(outList, targetName);
+	}
 }
 }
 void BuildState::getTargetDependencies(StringList& outList, const std::string& inTargetName, const bool inWithSelf) const
